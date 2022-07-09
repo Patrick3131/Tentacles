@@ -18,7 +18,12 @@ public struct PFActivity {
     
     public let uuid = UUID()
     public let type: PFActivityType
-    public let status: Status
+    public var status: Status
+    
+    public init(type: PFActivityType, status: Status) {
+        self.type = type
+        self.status = status
+    }
     
     public var attributesValue: AttributesValue {
         var values = type.attributes.value
@@ -35,7 +40,6 @@ public struct PFActivity {
     
     /// attributes that are added during the lifecycle
     private var lazyAttributes = [Attributes]()
-    
     
     /// adds new Attributes, if a key already exists the latest will be used
     public mutating func addAttributes(_ attributes: Attributes) {

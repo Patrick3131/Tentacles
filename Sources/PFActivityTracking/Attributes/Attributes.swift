@@ -8,5 +8,5 @@
 import Foundation
 
 public protocol Attributes {
-    var value: AttributesValue { get set }
+    var value: AttributesValue { get }
 }
