@@ -4,12 +4,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "PFTracking",
+    name: "Tentacles",
+    platforms:  [.iOS(.v15),
+                 .watchOS(.v8),
+                 .macOS(.v11)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
-            name: "PFTracking",
-            targets: ["PFTracking"]),
+            name: "Tentacles",
+            targets: ["Tentacles"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -19,10 +22,10 @@ let package = Package(
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
-            name: "PFTracking",
+            name: "Tentacles",
             dependencies: []),
         .testTarget(
-            name: "PFTrackingTests",
-            dependencies: ["PFTracking"]),
+            name: "TentaclesTests",
+            dependencies: ["Tentacles"]),
     ]
 )
