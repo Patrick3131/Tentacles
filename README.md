@@ -1,10 +1,11 @@
+
 # Tentacles
 Current State: **Work in Progress**
 # What is Tentacles?
 
-Tentacles are body parts that an animal uses to hold, grab or even feel things. That is what Tentacles should be used for in terms of your data collection in your application. It should help you structuring your events and abstracting your analytics from specific providers.
+Tentacles are body parts that an animal uses to hold, grab or even feel things. That is what Tentacles should be used for in terms of data collection in your application. It should help you to structure analytic events and abstract analytics from specific providers.
 
-When starting to build an app we often start only with collecting a few events and send these events to a service like Firebase Analytics. After a while we incrementally add new events and maybe also decide i.e. we would like to increase our user engagement and therefore add an other Service that need analytics i.e. Appboy. If we have not abstracted our analytics layer we now have to add Appboy whereever we log events for Firebase. Another reason is improvement of testing our analytics layer, if it is abstracted we can add a stub and easily test the events.
+When starting to build an app we often start only with collecting a few events and send these events to a service like Firebase Analytics. After a while we incrementally add new events and maybe also decide i.e. we would like to increase our user engagement and therefore add an other service that needs analytics i.e. Appboy. If we haven't abstracted our analytics layer we now have to add Appboy whereever we log events for Firebase. Another reason is the improvement of testing our analytics layer, if it is abstracted we can add a stub and easily test the events.
 
 For further information why abstracting a third party library make sense [Benoit Pasquier wrote an article](https://benoitpasquier.com/abstract-ios-third-party-libraries/).
 
@@ -23,7 +24,7 @@ Using
  
 ## Value Proposition Activities
 
-[Value proposition](https://en.wikipedia.org/wiki/Value_proposition) is a term borrowed out of Marketing and describes the reason why a customer would choose your product. Applying it to an application, it is the reason why a user would choose to use your app. As data related to the value proposition is especially important, tentacles offers a way to connect events that are related to the same value proposition activity session. A session (identified by UUID) is a period devoted to a particular value proposition activity. The UUID identifying the session is automatically added and managed. This brings the advantage of further analysing possibilities of our analytic data, as we can derive connections between the events.
+[Value proposition](https://en.wikipedia.org/wiki/Value_proposition) is a term borrowed out of marketing and describes the reason why a customer would choose your product. Applying it to an application, it is the reason why a user would choose to use your app. As data related to the value proposition is especially important, tentacles offers a way to connect events that are related to the same value proposition activity session. A session (identified by UUID) is a period devoted to a particular value proposition activity. The UUID identifying the session is automatically added and managed. This brings the advantage of further analysing possibilities of our analytic data, as we can derive connections between the events.
 
 Lets use Youtube as an example, lets simplify and say their value proposition is offering engaging content in particular videos.
 To measure this, watching videos is analysed. The user experience of watching a video usually involves these steps:
@@ -53,6 +54,7 @@ If a prohibited status update occurs a non fatal error event is forwarded and th
 - What happens if the app goes in to background(-> all sessions are completed)
 
 - What happens if the app comes back in to foreground( -> new sessions are created and set to open)
+- More than one session of the same value proposition?
 
 ```
 struct WatchingVideo: ValueProposition {
