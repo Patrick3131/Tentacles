@@ -19,3 +19,7 @@ public extension AnalyticsEventAttributes {
         return dic ?? [String: AnyHashable]()
     }
 }
+
+struct ErrorEventAttributes: AnalyticsEventAttributes {
+    
+}

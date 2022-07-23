@@ -12,4 +12,9 @@ public protocol ValueProposition {
     var attributes: AnalyticsEventAttributes { get }
 }
 
-
+extension ValueProposition {
+    func isEqual(to other: ValueProposition) -> Bool {
+        (self.name == other.name)
+        && (self.attributes.serialiseToValue() == other.attributes.serialiseToValue())
+    }
+}

@@ -21,30 +21,76 @@ import Combine
 ///
 /// Discussion about adding additional attributes via status to the tracking event later on in the lifecycle of the Activity:
 /// it doesnt make sense to add them to the activity itself, because then the attributes are also added to later events i.e to completed even if they were only supposed to be used for paused. So if they are going to be added then via the status enum.
-struct ValuePropositionSessionManager {
+class ValuePropositionSessionManager {
     enum Error: Swift.Error {
-        
-    }
-    private var managedActivities = [ValuePropositionSession]()
-
-    private var _publisher = PassthroughSubject<AnalyticsEvent, Never>()
-    public lazy var trackingEvent: AnyPublisher<
-        AnalyticsEvent, Never> = _publisher.eraseToAnyPublisher()
-
-    func updateSession(for valueProposition: ValueProposition,
-                        with action: ValuePropositionAction) {
-        
+        case initialActionNeedsToBeOpen
+        case prohibitedStateUpdate(session: ValuePropositionSession,
+                                   action: ValuePropositionAction.Status)
     }
     
-    private func getFirstActivity(for valueProposition: ValueProposition) -> ValuePropositionSession? {
-        for activity in managedActivities {
-            if (activity.valueProposition.name == valueProposition.name)
-                &&
-                (activity.valueProposition.attributes.serialiseToValue()
-                 == valueProposition.attributes.serialiseToValue()) {
-                return activity
-            }
+    private var sessions = [ValuePropositionSession]()
+
+    func process(for valueProposition: ValueProposition,
+                       with action: ValuePropositionAction) throws -> AnalyticsEvent {
+        if let index = getFirstIndexEqualSession(for: valueProposition) {
+            return try processActiveSession(for: action, at: index)
+        } else {
+            return try createInitialSession(for: valueProposition,
+                                        and: action)
         }
-        return nil
+    }
+    
+    private func processActiveSession(for action: ValuePropositionAction, at index: Int) throws -> AnalyticsEvent {
+        var session = sessions[index]
+        let newStatus = try createStatus(from: session, and: action.status)
+        session.status = newStatus
+        refreshSessions(session: session, index: index)
+        return session
+    }
+    
+    private func createInitialSession(for valueProposition: ValueProposition,
+                                      and action: ValuePropositionAction) throws -> AnalyticsEvent {
+        if action.status == .open {
+            let newSession = ValuePropositionSession(valueProposition: valueProposition, action: action.trigger)
+            sessions.append(newSession)
+            return newSession
+        } else {
+            throw Error.initialActionNeedsToBeOpen
+        }
+    }
+    
+    private func refreshSessions(session: ValuePropositionSession, index: Int) {
+        switch session.status {
+        case .opened, .started, .paused:
+            sessions[index] = session
+        case .canceled, .completed :
+            sessions.remove(at: index)
+        }
+    }
+    
+    private func getFirstIndexEqualSession(for valueProposition: ValueProposition) -> Int? {
+        sessions.firstIndex { valueProposition.isEqual(to: $0.valueProposition) }
+    }
+    
+    private func createStatus(from session: ValuePropositionSession,
+                              and actionStatus: ValuePropositionAction.Status) throws -> ValuePropositionSession.Status {
+        switch (session.status, actionStatus) {
+        case (.opened, .open):
+            return .opened
+        case (.opened, .start):
+            return .started
+        case (.opened, .cancel), (.started, .cancel),(.paused, .cancel):
+            return .canceled
+        case (.started, .pause):
+            return .paused
+        case (.started, .complete):
+            return .completed
+        case (.paused, .start):
+            return .started
+        default:
+            throw Error.prohibitedStateUpdate(
+                session: session, action: actionStatus)
+        }
+        
     }
 }

@@ -32,7 +32,7 @@ struct ValuePropositionSession: AnalyticsEvent {
         case opened
         case started
         case paused
-        case cancelled
+        case canceled
         case completed
     }
     
@@ -48,7 +48,7 @@ struct ValuePropositionSession: AnalyticsEvent {
     
     var otherAttributes: AnalyticsEventAttributes? {
         Attributes(uuid: uuid.uuidString,
-                   status: .cancelled,
+                   status: .canceled,
                    valuePropostionAttributes: valueProposition.attributes.serialiseToValue())
     }
     

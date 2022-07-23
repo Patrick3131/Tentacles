@@ -40,5 +40,6 @@ protocol Analytics: UserIdentifyingTracking {
 
 public protocol AnalyticsRegister {
     func register(_ reporter: AnalyticsReporter)
+    func register(_ errorReporter: NonFatalErrorTracking)
     func removeReporters()
 }
