@@ -9,7 +9,7 @@ import Foundation
 /// PFActivity
 /// When first created the status is set to opened.
 struct ValuePropositionSession: AnalyticsEvent {
-    private struct Attributes: AnalyticsEventAttributes, Encodable {
+    struct Attributes: AnalyticsEventAttributes, Encodable {
         let uuid: String
         let status: Status
         let valuePropostionAttributes: AttributesValue
@@ -46,7 +46,7 @@ struct ValuePropositionSession: AnalyticsEvent {
         valueProposition.name
     }
     
-    var otherAttributes: AnalyticsEventAttributes? {
+    var otherAttributes: Attributes? {
         Attributes(uuid: uuid.uuidString,
                    status: .canceled,
                    valuePropostionAttributes: valueProposition.attributes.serialiseToValue())

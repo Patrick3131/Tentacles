@@ -31,7 +31,7 @@ class ValuePropositionSessionManager {
     private var sessions = [ValuePropositionSession]()
 
     func process(for valueProposition: ValueProposition,
-                       with action: ValuePropositionAction) throws -> AnalyticsEvent {
+                       with action: ValuePropositionAction) throws -> any AnalyticsEvent {
         if let index = getFirstIndexEqualSession(for: valueProposition) {
             return try processActiveSession(for: action, at: index)
         } else {
@@ -40,7 +40,7 @@ class ValuePropositionSessionManager {
         }
     }
     
-    private func processActiveSession(for action: ValuePropositionAction, at index: Int) throws -> AnalyticsEvent {
+    private func processActiveSession(for action: ValuePropositionAction, at index: Int) throws -> any AnalyticsEvent {
         var session = sessions[index]
         let newStatus = try createStatus(from: session, and: action.status)
         session.status = newStatus
@@ -49,7 +49,7 @@ class ValuePropositionSessionManager {
     }
     
     private func createInitialSession(for valueProposition: ValueProposition,
-                                      and action: ValuePropositionAction) throws -> AnalyticsEvent {
+                                      and action: ValuePropositionAction) throws -> any AnalyticsEvent {
         if action.status == .open {
             let newSession = ValuePropositionSession(valueProposition: valueProposition, action: action.trigger)
             sessions.append(newSession)

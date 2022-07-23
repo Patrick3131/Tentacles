@@ -28,7 +28,7 @@ class Tentacles: AnalyticsRegister {
 }
 
 extension Tentacles: AnalyticsEventTracking {
-    func track(_ event: AnalyticsEvent) {
+    func track(_ event: any AnalyticsEvent) {
         analyticsReporters.forEach { $0.report(event: event) }
     }
 }

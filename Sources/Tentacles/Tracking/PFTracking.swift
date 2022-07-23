@@ -17,7 +17,7 @@ protocol UserIdentifyingTracking {
 }
 
 public protocol AnalyticsEventTracking {
-    func track(_ event: AnalyticsEvent)
+    func track(_ event: any AnalyticsEvent)
 }
 
 public protocol ValuePropositionTracking {
@@ -31,7 +31,7 @@ public protocol NonFatalErrorTracking {
 
 public protocol AnalyticsReporter {
     func setup()
-    func report(event: AnalyticsEvent)
+    func report(event: any AnalyticsEvent)
 }
 
 protocol Analytics: UserIdentifyingTracking {
