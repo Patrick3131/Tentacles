@@ -18,5 +18,3 @@ public protocol AnalyticsEvent {
     /// additional attributes that are valuebale for the event.
     var otherAttributes: Attributes? { get }
 }
-
-

@@ -9,17 +9,22 @@ import Foundation
 
 
 public class Tentacles: AnalyticsRegister {
-    private var analyticsReporters = [AnalyticsReporter]()
+    private typealias AnalyticsUnit = (reporter: AnalyticsReporter, middlewares: [Middleware])
+    private var analyticsUnit = [AnalyticsUnit]()
     private var errorReporters = [NonFatalErrorTracking]()
     private var middlewares = [Middleware]()
     private var valuePropositionSessionManager: ValuePropositionSessionManager
     public init() {
-        self.middlewares.append(ValuePropositionSessionMiddleware())
         self.valuePropositionSessionManager = ValuePropositionSessionManager()
     }
     
-    public func register(_ reporter: AnalyticsReporter) {
-        analyticsReporters.append(reporter)
+    public func register(_ middleware: Middleware) {
+        middlewares.append(middleware)
+    }
+    
+    public func register(_ reporter: AnalyticsReporter, middlewares: [Middleware] = []) {
+        let analyticsUnit: AnalyticsUnit = (reporter: reporter, middlewares: middlewares)
+        self.analyticsUnit.append(analyticsUnit)
     }
     
     public func register(_ errorReporter: NonFatalErrorTracking) {
@@ -27,19 +32,29 @@ public class Tentacles: AnalyticsRegister {
     }
     
     public func removeReporters() {
-        analyticsReporters = []
+        analyticsUnit = []
         errorReporters = []
+    }
+    
+    fileprivate func track(_ event: RawAnalyticsEvent) {
+        var newEvent = event
+        middlewares.forEach { middleware in
+            newEvent = middleware.transform(newEvent)
+        }
+        analyticsUnit.forEach { (reporter, middlewares) in
+            var reporterSpecificEvent = newEvent
+            middlewares.forEach { middleware in
+                reporterSpecificEvent = middleware.transform(reporterSpecificEvent)
+            }
+            reporter.report(event: newEvent)
+        }
     }
     
 }
 
 extension Tentacles: AnalyticsEventTracking {
     public func track(_ event: any AnalyticsEvent) {
-        var rawAnalyticsEvent = RawAnalyticsEvent(analyticsEvent: event)
-        middlewares.forEach { middleware in
-            rawAnalyticsEvent = middleware.transform(rawAnalyticsEvent)
-        }
-        analyticsReporters.forEach { $0.report(event: rawAnalyticsEvent) }
+       track(RawAnalyticsEvent(analyticsEvent: event))
     }
 }
 

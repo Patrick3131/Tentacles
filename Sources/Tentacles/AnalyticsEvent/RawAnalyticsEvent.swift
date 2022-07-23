@@ -26,6 +26,5 @@ extension RawAnalyticsEvent {
             }
         }
         self.attributes = attributes
-        
     }
 }
