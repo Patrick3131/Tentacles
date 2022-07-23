@@ -8,12 +8,13 @@
 import Foundation
 
 public protocol ValueProposition {
+    associatedtype Attributes: TentacleAttributes
     var name: String { get }
-    var attributes: AnalyticsEventAttributes { get }
+    var attributes: Attributes { get }
 }
 
-extension ValueProposition {
-    func isEqual(to other: ValueProposition) -> Bool {
+public extension ValueProposition {
+    func isEqual(to other: any ValueProposition) -> Bool {
         (self.name == other.name)
         && (self.attributes.serialiseToValue() == other.attributes.serialiseToValue())
     }

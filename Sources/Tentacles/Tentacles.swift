@@ -8,19 +8,25 @@
 import Foundation
 
 
-class Tentacles: AnalyticsRegister {
+public class Tentacles: AnalyticsRegister {
     private var analyticsReporters = [AnalyticsReporter]()
     private var errorReporters = [NonFatalErrorTracking]()
+    private var middlewares = [Middleware]()
+    private var valuePropositionSessionManager: ValuePropositionSessionManager
+    public init() {
+        self.middlewares.append(ValuePropositionSessionMiddleware())
+        self.valuePropositionSessionManager = ValuePropositionSessionManager()
+    }
     
-    func register(_ reporter: AnalyticsReporter) {
+    public func register(_ reporter: AnalyticsReporter) {
         analyticsReporters.append(reporter)
     }
     
-    func register(_ errorReporter: NonFatalErrorTracking) {
+    public func register(_ errorReporter: NonFatalErrorTracking) {
         errorReporters.append(errorReporter)
     }
     
-    func removeReporters() {
+    public func removeReporters() {
         analyticsReporters = []
         errorReporters = []
     }
@@ -28,20 +34,29 @@ class Tentacles: AnalyticsRegister {
 }
 
 extension Tentacles: AnalyticsEventTracking {
-    func track(_ event: any AnalyticsEvent) {
-        analyticsReporters.forEach { $0.report(event: event) }
+    public func track(_ event: any AnalyticsEvent) {
+        var rawAnalyticsEvent = RawAnalyticsEvent(analyticsEvent: event)
+        middlewares.forEach { middleware in
+            rawAnalyticsEvent = middleware.transform(rawAnalyticsEvent)
+        }
+        analyticsReporters.forEach { $0.report(event: rawAnalyticsEvent) }
     }
 }
 
 extension Tentacles: NonFatalErrorTracking {
-    func track(_ error: Error) {
+    public func track(_ error: Error) {
         errorReporters.forEach { $0.track(error) }
     }
 }
 
 extension Tentacles: ValuePropositionTracking {
-    func track(for valueProposition: ValueProposition, with action: ValuePropositionAction) {
-        
+    public func track(for valueProposition: any ValueProposition, with action: ValuePropositionAction) {
+        do {
+            let event = try valuePropositionSessionManager.process(for: valueProposition, with: action)
+            self.track(event)
+        } catch {
+            self.track(error)
+        }
     }
 }
 

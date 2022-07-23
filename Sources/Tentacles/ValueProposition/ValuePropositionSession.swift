@@ -9,10 +9,10 @@ import Foundation
 /// PFActivity
 /// When first created the status is set to opened.
 struct ValuePropositionSession: AnalyticsEvent {
-    struct Attributes: AnalyticsEventAttributes, Encodable {
+    struct Attributes: TentacleAttributes, Encodable {
         let uuid: String
         let status: Status
-        let valuePropostionAttributes: AttributesValue
+        let valuePropositionAttributes: AttributesValue
         
         enum CodingKeys: String, CodingKey {
             case uuid, status, valuePropostionAttributes
@@ -22,9 +22,8 @@ struct ValuePropositionSession: AnalyticsEvent {
             var container = encoder.container(keyedBy: CodingKeys.self)
             try container.encode(uuid, forKey: .uuid)
             try container.encode(status, forKey: .status)
-            let data = try JSONSerialization.data(withJSONObject: valuePropostionAttributes, options: [])
+            let data = try JSONSerialization.data(withJSONObject: valuePropositionAttributes, options: [])
             try container.encode(data, forKey: .valuePropostionAttributes)
-            
         }
     }
     
@@ -38,9 +37,9 @@ struct ValuePropositionSession: AnalyticsEvent {
     
     var trigger: AnalyticsEventTrigger
     var status: Status
-    let valueProposition: ValueProposition
+    let valueProposition: any ValueProposition
     let category: AnalyticsEventCategory = .valueProposition
-    let uuid = UUID()
+    private let uuid = UUID()
     
     var name: String {
         valueProposition.name
@@ -49,10 +48,10 @@ struct ValuePropositionSession: AnalyticsEvent {
     var otherAttributes: Attributes? {
         Attributes(uuid: uuid.uuidString,
                    status: .canceled,
-                   valuePropostionAttributes: valueProposition.attributes.serialiseToValue())
+                   valuePropositionAttributes: valueProposition.attributes.serialiseToValue())
     }
     
-    init(valueProposition: ValueProposition,
+    init(valueProposition: any ValueProposition,
          action: AnalyticsEventTrigger) {
         self.valueProposition = valueProposition
         self.status = .opened

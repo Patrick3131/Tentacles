@@ -30,7 +30,7 @@ class ValuePropositionSessionManager {
     
     private var sessions = [ValuePropositionSession]()
 
-    func process(for valueProposition: ValueProposition,
+    func process(for valueProposition: some ValueProposition,
                        with action: ValuePropositionAction) throws -> any AnalyticsEvent {
         if let index = getFirstIndexEqualSession(for: valueProposition) {
             return try processActiveSession(for: action, at: index)
@@ -48,10 +48,11 @@ class ValuePropositionSessionManager {
         return session
     }
     
-    private func createInitialSession(for valueProposition: ValueProposition,
+    private func createInitialSession(for valueProposition: any ValueProposition,
                                       and action: ValuePropositionAction) throws -> any AnalyticsEvent {
         if action.status == .open {
-            let newSession = ValuePropositionSession(valueProposition: valueProposition, action: action.trigger)
+            let newSession = ValuePropositionSession(valueProposition: valueProposition,
+                                                     action: action.trigger)
             sessions.append(newSession)
             return newSession
         } else {
@@ -68,12 +69,13 @@ class ValuePropositionSessionManager {
         }
     }
     
-    private func getFirstIndexEqualSession(for valueProposition: ValueProposition) -> Int? {
+    private func getFirstIndexEqualSession(for valueProposition: any ValueProposition) -> Int? {
         sessions.firstIndex { valueProposition.isEqual(to: $0.valueProposition) }
     }
     
     private func createStatus(from session: ValuePropositionSession,
-                              and actionStatus: ValuePropositionAction.Status) throws -> ValuePropositionSession.Status {
+                              and actionStatus: ValuePropositionAction.Status) throws
+    -> ValuePropositionSession.Status {
         switch (session.status, actionStatus) {
         case (.opened, .open):
             return .opened
@@ -91,6 +93,5 @@ class ValuePropositionSessionManager {
             throw Error.prohibitedStateUpdate(
                 session: session, action: actionStatus)
         }
-        
     }
 }

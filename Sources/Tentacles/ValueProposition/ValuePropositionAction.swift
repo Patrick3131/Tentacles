@@ -19,55 +19,48 @@ public struct ValuePropositionAction {
     
     let status: Status
     let trigger: AnalyticsEventTrigger
-    let attributes: AnalyticsEventAttributes?
+    let attributes: TentacleAttributes?
 
     public init(status: Status,
                 trigger: AnalyticsEventTrigger,
-                attributes: AnalyticsEventAttributes? = nil) {
+                attributes: TentacleAttributes? = nil) {
         self.status = status
         self.trigger = trigger
         self.attributes = attributes
     }
 }
 
-extension ValuePropositionAction {
-    static func builder(status: Status,
-                        trigger: AnalyticsEventTrigger = .clicked,
-                        attributes: AnalyticsEventAttributes? = nil) -> Self {
-        Self.init(status: status,
-                  trigger: trigger,
-                  attributes: attributes)
-    }
-    
+public extension ValuePropositionAction {
     static func open(trigger: AnalyticsEventTrigger = .clicked,
-                     attributes: AnalyticsEventAttributes? = nil) -> Self {
+                     attributes: TentacleAttributes? = nil) -> Self {
         Self.init(status: .open,
                   trigger: trigger,
                   attributes: attributes)
     }
+    
     static func start(trigger: AnalyticsEventTrigger = .clicked,
-                      attributes: AnalyticsEventAttributes? = nil) -> Self {
+                      attributes: TentacleAttributes? = nil) -> Self {
         Self.init(status: .start,
                   trigger: trigger,
                   attributes: attributes)
     }
     
     static func pause(trigger: AnalyticsEventTrigger = .clicked,
-                      attributes: AnalyticsEventAttributes? = nil) -> Self {
+                      attributes: TentacleAttributes? = nil) -> Self {
         Self.init(status: .pause,
                   trigger: trigger,
                   attributes: attributes)
     }
     
     static func complete(trigger: AnalyticsEventTrigger = .clicked,
-                      attributes: AnalyticsEventAttributes? = nil) -> Self {
+                      attributes: TentacleAttributes? = nil) -> Self {
         Self.init(status: .complete,
                   trigger: trigger,
                   attributes: attributes)
     }
     
     static func cancel(trigger: AnalyticsEventTrigger = .clicked,
-                      attributes: AnalyticsEventAttributes? = nil) -> Self {
+                      attributes: TentacleAttributes? = nil) -> Self {
         Self.init(status: .cancel,
                   trigger: trigger,
                   attributes: attributes)

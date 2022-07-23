@@ -9,7 +9,7 @@ import Foundation
 
 /// Basic event that is used for tracking
 public protocol AnalyticsEvent {
-    associatedtype Attributes: AnalyticsEventAttributes 
+    associatedtype Attributes: TentacleAttributes
     /// Initiator for the event, this could be a click or a appearance of a screen.
     /// Needs to be defined by the app.
     var trigger: AnalyticsEventTrigger { get }
@@ -18,4 +18,5 @@ public protocol AnalyticsEvent {
     /// additional attributes that are valuebale for the event.
     var otherAttributes: Attributes? { get }
 }
+
 
