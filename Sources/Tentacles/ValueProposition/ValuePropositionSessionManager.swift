@@ -33,14 +33,16 @@ class ValuePropositionSessionManager {
     func process(for valueProposition: some ValueProposition,
                        with action: ValuePropositionAction) throws -> RawAnalyticsEvent {
         if let index = getFirstIndexEqualSession(for: valueProposition) {
-            return try processActiveSession(for: action, at: index).createRawAnalyticsEvent(action: action)
+            return try processActiveSession(for: action,
+                                            at: index).createRawAnalyticsEvent(action: action)
         } else {
             return try createInitialSession(for: valueProposition,
                                             and: action).createRawAnalyticsEvent(action: action)
         }
     }
     
-    private func processActiveSession(for action: ValuePropositionAction, at index: Int) throws -> ValuePropositionSession {
+    private func processActiveSession(for action: ValuePropositionAction,
+                                      at index: Int) throws -> ValuePropositionSession {
         var session = sessions[index]
         let newStatus = try createStatus(from: session, and: action.status)
         session.status = newStatus

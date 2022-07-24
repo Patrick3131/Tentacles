@@ -17,9 +17,9 @@ public struct ValuePropositionAction {
         case complete
     }
     
-    let status: Status
-    let trigger: AnalyticsEventTrigger
-    let attributes: TentacleAttributes?
+    public let status: Status
+    public let trigger: AnalyticsEventTrigger
+    public let attributes: TentacleAttributes?
 
     public init(status: Status,
                 trigger: AnalyticsEventTrigger,

@@ -8,8 +8,8 @@
 import Foundation
 
 public struct RawAnalyticsEvent {
-    let name: String
-    var attributes: AttributesValue
+    public let name: String
+    public var attributes: AttributesValue
 }
 
 extension RawAnalyticsEvent {

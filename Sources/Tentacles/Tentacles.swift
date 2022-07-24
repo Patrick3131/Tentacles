@@ -22,12 +22,12 @@ public class Tentacles: AnalyticsRegister {
         middlewares.append(middleware)
     }
     
-    public func register(_ reporter: AnalyticsReporter, middlewares: [Middleware] = []) {
-        let analyticsUnit: AnalyticsUnit = (reporter: reporter, middlewares: middlewares)
+    public func register(analyticsReporter: AnalyticsReporter, middlewares: [Middleware] = []) {
+        let analyticsUnit: AnalyticsUnit = (reporter: analyticsReporter, middlewares: middlewares)
         self.analyticsUnit.append(analyticsUnit)
     }
     
-    public func register(_ errorReporter: NonFatalErrorTracking) {
+    public func register(errorReporter: NonFatalErrorTracking) {
         errorReporters.append(errorReporter)
     }
     

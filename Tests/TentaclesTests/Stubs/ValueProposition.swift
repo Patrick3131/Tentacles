@@ -10,18 +10,19 @@ import Tentacles
 
 struct WatchingVideoValueProposition: ValueProposition {
     let name: String = "watchingVideo"
-    let attributes: AnalyticsEventAttributes
+    let attributes: Attributes
     init(attributes: Attributes) {
         self.attributes = attributes
     }
     
     static let stub: Self = .init(attributes:
             .init(videoName: "Learning Swift",
-                  language: "English", duration: 450))
+                  language: "English",
+                  duration: 450))
 }
 
 extension WatchingVideoValueProposition {
-    struct Attributes: AnalyticsEventAttributes {
+    struct Attributes: TentacleAttributes {
         let videoName: String
         let language: String
         /// in seconds
@@ -29,30 +30,14 @@ extension WatchingVideoValueProposition {
     }
 }
 
-struct WatchingVideoCompletionAttributes: AnalyticsEventAttributes {
+struct WatchingVideoCompletionAttributes: TentacleAttributes {
     let secondsSkipped: Double
     let userCommented: Bool
 }
 
 struct CommentingValueProposition: ValueProposition {
     let name: String = "commenting"
-    let attributes: AnalyticsEventAttributes
+    let attributes: KeyValueAttribute<Bool>
     
-    static let stub: Self = .init(attributes: Attributes(replyToOtherComment: false))
-}
-
-extension CommentingValueProposition {
-    struct Attributes: AnalyticsEventAttributes {
-        let replyToOtherComment: Bool
-    }
-}
-
-
-
-
-struct ValuePropositionTrackingStub: ValuePropositionTracking {
-    func track(for valueProposition: ValueProposition,
-               with action: ValuePropositionAction) {
-        
-    }
+    static let stub: Self = .init(attributes: .init(key: "replyToOtherComment", value: false))
 }

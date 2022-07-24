@@ -28,7 +28,7 @@ struct ValuePropositionSession {
     func createRawAnalyticsEvent(action: ValuePropositionAction) -> RawAnalyticsEvent {
         var attributes = AttributesValue()
         attributes["uuid"] = uuid.uuidString
-        attributes["status"] = status
+        attributes["status"] = status.rawValue
         attributes["trigger"] = action.trigger
         attributes["category"] = AnalyticsEventCategory.valueProposition
         for (key, value) in valueProposition.attributes.serialiseToValue() {

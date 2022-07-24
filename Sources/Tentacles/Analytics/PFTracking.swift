@@ -39,8 +39,8 @@ public protocol AnalyticsRegister {
     func register(_ middleware: Middleware)
     /// Registers reporter to AnalyticsRegister and its specific middlewares, middlewares registered this way
     /// only apply to one specific reporter.
-    func register(_ reporter: AnalyticsReporter, middlewares: [Middleware])
-    func register(_ errorReporter: NonFatalErrorTracking)
+    func register(analyticsReporter: AnalyticsReporter, middlewares: [Middleware])
+    func register(errorReporter: NonFatalErrorTracking)
     /// removes all reporters, both AnalyticsReporter and NonFatalTrackingReporter, and its specific middlewares
     func removeReporters()
 }

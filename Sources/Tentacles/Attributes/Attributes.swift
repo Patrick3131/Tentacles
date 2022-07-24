@@ -20,6 +20,4 @@ public extension TentacleAttributes {
     }
 }
 
-struct ErrorEventAttributes: TentacleAttributes {
-    
-}
+
