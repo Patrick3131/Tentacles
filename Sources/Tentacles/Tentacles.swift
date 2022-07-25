@@ -6,7 +6,7 @@
 //
 
 import Foundation
-
+import Combine
 
 public class Tentacles: AnalyticsRegister {
     private typealias AnalyticsUnit = (reporter: AnalyticsReporter, middlewares: [Middleware])
@@ -14,6 +14,7 @@ public class Tentacles: AnalyticsRegister {
     private var errorReporters = [NonFatalErrorTracking]()
     private var middlewares = [Middleware]()
     private var valuePropositionSessionManager: ValuePropositionSessionManager
+    private var valuePropositionEvents: AnyCancellable?
     public init() {
         self.valuePropositionSessionManager = ValuePropositionSessionManager()
     }
@@ -66,12 +67,18 @@ extension Tentacles: NonFatalErrorTracking {
 
 extension Tentacles: ValuePropositionTracking {
     public func track(for valueProposition: any ValueProposition, with action: ValuePropositionAction) {
-        do {
-            let event = try valuePropositionSessionManager.process(for: valueProposition, with: action)
-            self.track(event)
-        } catch {
-            self.track(error)
+        if valuePropositionEvents == nil {
+            valuePropositionEvents = valuePropositionSessionManager.eventPublisher
+                .sink(receiveValue: { [weak self] results in
+                    switch results {
+                    case .success(let event):
+                        self?.track(event)
+                    case .failure(let error):
+                        self?.track(error)
+                    }
+                })
         }
+        valuePropositionSessionManager.process(for: valueProposition, with: action)
     }
 }
 

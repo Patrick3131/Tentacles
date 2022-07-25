@@ -16,7 +16,7 @@ final class AttributesTests: XCTestCase {
     }
     
     func testSerializationKeyValueAttribute() throws {
-        let key = "duration", value = 5423
+        let key = "Test", value = 5423
         let keyValueAttribute = KeyValueAttribute<Int>(key: key, value: value)
         let serialisedValue = keyValueAttribute.serialiseToValue()
         XCTAssertEqual(serialisedValue.map{String($0.key) }[0], key)

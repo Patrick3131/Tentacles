@@ -27,17 +27,31 @@ class ValuePropositionSessionManager {
         case prohibitedStateUpdate(session: ValuePropositionSession,
                                    action: ValuePropositionAction.Status)
     }
+    private let _eventPublisher: PassthroughSubject<Result<RawAnalyticsEvent, Swift.Error>, Never> = .init()
+    lazy var eventPublisher: AnyPublisher<Result<RawAnalyticsEvent, Swift.Error>, Never> = _eventPublisher.eraseToAnyPublisher()
     
     private var sessions = [ValuePropositionSession]()
 
     func process(for valueProposition: some ValueProposition,
-                       with action: ValuePropositionAction) throws -> RawAnalyticsEvent {
+                       with action: ValuePropositionAction) {
+        let session: ValuePropositionSession
         if let index = getFirstIndexEqualSession(for: valueProposition) {
-            return try processActiveSession(for: action,
-                                            at: index).createRawAnalyticsEvent(action: action)
+            do {
+                session = try processActiveSession(for: action,
+                                                   at: index)
+                _eventPublisher.send(.success(session.createRawAnalyticsEvent(action: action)))
+            } catch {
+                _eventPublisher.send(.failure(error))
+            }
+          
         } else {
-            return try createInitialSession(for: valueProposition,
-                                            and: action).createRawAnalyticsEvent(action: action)
+            do {
+                session = try createInitialSession(for: valueProposition,
+                                                   and: action)
+                _eventPublisher.send(.success(session.createRawAnalyticsEvent(action: action)))
+            } catch {
+                _eventPublisher.send(.failure(error))
+            }
         }
     }
     
@@ -46,7 +60,7 @@ class ValuePropositionSessionManager {
         var session = sessions[index]
         let newStatus = try createStatus(from: session, and: action.status)
         session.status = newStatus
-        refreshSessions(session: session, index: index)
+        updateSessions(session: session, index: index)
         return session
     }
     
@@ -61,7 +75,7 @@ class ValuePropositionSessionManager {
         }
     }
     
-    private func refreshSessions(session: ValuePropositionSession, index: Int) {
+    private func updateSessions(session: ValuePropositionSession, index: Int) {
         switch session.status {
         case .opened, .started, .paused:
             sessions[index] = session
@@ -69,6 +83,11 @@ class ValuePropositionSessionManager {
             sessions.remove(at: index)
         }
     }
+    
+    private func refreshSessions() {
+        
+    }
+
     
     private func getFirstIndexEqualSession(for valueProposition: any ValueProposition) -> Int? {
         sessions.firstIndex { valueProposition.isEqual(to: $0.valueProposition) }

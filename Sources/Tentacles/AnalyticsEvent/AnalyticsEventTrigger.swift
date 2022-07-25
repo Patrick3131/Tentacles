@@ -14,4 +14,6 @@ public extension AnalyticsEventTrigger {
     static let automatically = "automatically"
     static let navigated = "navigated"
     static let openedScreen = "openedScreen"
+    static let didEnterBackground = "didEnterBackground"
+    static let didEnterForeground = "didEnterForeground"
 }

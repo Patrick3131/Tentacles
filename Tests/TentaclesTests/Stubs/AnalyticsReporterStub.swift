@@ -10,9 +10,8 @@ import Tentacles
 
 class AnalyticsReporterStub: AnalyticsReporter {
     var results = [Any]()
-    func setup() {
-        
-    }
+    
+    func setup() {}
     
     func report(event: RawAnalyticsEvent) {
         results.append(event)
