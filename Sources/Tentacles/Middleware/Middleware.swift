@@ -7,6 +7,9 @@
 
 import Foundation
 
-public protocol Middleware {
-    func transform(_ analyticsEvent: RawAnalyticsEvent) -> RawAnalyticsEvent
+public struct Middleware {
+    let closure: (RawAnalyticsEvent) -> RawAnalyticsEvent
+    init(_ closure: @escaping (RawAnalyticsEvent) -> RawAnalyticsEvent) {
+        self.closure = closure
+    }
 }

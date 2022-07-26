@@ -40,12 +40,12 @@ public class Tentacles: AnalyticsRegister {
     fileprivate func track(_ event: RawAnalyticsEvent) {
         var newEvent = event
         middlewares.forEach { middleware in
-            newEvent = middleware.transform(newEvent)
+            newEvent = middleware.closure(newEvent)
         }
         analyticsUnit.forEach { (reporter, middlewares) in
             var reporterSpecificEvent = newEvent
             middlewares.forEach { middleware in
-                reporterSpecificEvent = middleware.transform(reporterSpecificEvent)
+                reporterSpecificEvent = middleware.closure(reporterSpecificEvent)
             }
             reporter.report(event: newEvent)
         }
