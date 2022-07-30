@@ -34,20 +34,17 @@ final class ValuePropositionTests: XCTestCase {
     private var reporterStub: AnalyticsReporterStub!
     override func setUpWithError() throws {
         reporterStub = AnalyticsReporterStub()
-        tentacles = Tentacles()
-        tentacles?.register(analyticsReporter: reporterStub)
-        tentacles?.register(errorReporter: reporterStub)
+        tentacles = buildTentacles(analyticsReporters: [reporterStub],
+                                   errorReporters: [reporterStub])
         let attributes = WatchingVideoValueProposition
             .Attributes(videoName: videoName, language: language, duration: duration)
         watchingVideovalueProposition = WatchingVideoValueProposition(attributes: attributes)
-        // Put setup code here. This method is called before the invocation of each test method in the class.
     }
     
     override func tearDownWithError() throws {
         tentacles = nil
         watchingVideovalueProposition = nil
         reporterStub = nil
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
     
     func testOpenStartCompleteEvents() throws {
@@ -283,14 +280,13 @@ final class ValuePropositionTests: XCTestCase {
                        with result: Result,
                        trigger: TentaclesEventTrigger = .clicked,
                        at index: Int) {
-        let event = reporterStub.results[index]
         switch result {
         case .success:
-            if let event = event as? RawAnalyticsEvent {
+            if let event = reporterStub.isResultEvent(index: index) {
                 evaluate(event: event, for: status, trigger: trigger)
             }
         case .error:
-            if let error = event as? Error {
+            if let error = reporterStub.isResultError(index: index) {
                 print(error.localizedDescription)
             }
         }

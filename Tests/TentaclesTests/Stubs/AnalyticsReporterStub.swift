@@ -23,3 +23,13 @@ extension AnalyticsReporterStub: NonFatalErrorTracking {
         results.append(error)
     }
 }
+
+extension AnalyticsReporterStub {
+    func isResultEvent(index: Int) -> RawAnalyticsEvent? {
+        results[index] as? RawAnalyticsEvent
+    }
+    
+    func isResultError(index: Int) -> Error? {
+        results[index] as? Error
+    }
+}

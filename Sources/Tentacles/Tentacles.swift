@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  Tentacles.swift
 //  
 //
 //  Created by Patrick Fischer on 22.07.22.
@@ -33,7 +33,7 @@ public class Tentacles: AnalyticsRegister {
         errorReporters.append(errorReporter)
     }
     
-    public func removeReporters() {
+    public func resetRegister() {
         analyticsUnit = []
         errorReporters = []
     }
@@ -48,10 +48,9 @@ public class Tentacles: AnalyticsRegister {
             middlewares.forEach { middleware in
                 reporterSpecificEvent = middleware.closure(reporterSpecificEvent)
             }
-            reporter.report(event: newEvent)
+            reporter.report(event: reporterSpecificEvent)
         }
     }
-    
 }
 
 extension Tentacles: AnalyticsEventTracking {

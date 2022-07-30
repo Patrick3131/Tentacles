@@ -1,6 +1,5 @@
 import Foundation
 
-
 struct ValuePropositionSession {
     enum Status: String, Encodable {
         case opened

@@ -13,3 +13,13 @@ public struct Middleware {
         self.closure = closure
     }
 }
+
+public extension Middleware {
+    static let capitalisedAttributeKeys: Self = Self { event -> RawAnalyticsEvent in
+        var attributes = AttributesValue()
+        event.attributes.forEach {
+            attributes[$0.key.capitalized] = $0.value
+        }
+        return RawAnalyticsEvent(name: event.name, attributes: attributes)
+    }
+}
