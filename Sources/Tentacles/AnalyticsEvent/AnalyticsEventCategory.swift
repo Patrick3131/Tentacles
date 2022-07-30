@@ -7,11 +7,18 @@
 
 import Foundation
 
-public typealias AnalyticsEventCategory = String
+public protocol AnalyticsEventCategory {
+    var name: String { get }
+}
 
-public extension AnalyticsEventCategory {
-    static let valueProposition = "valueProposition"
-    static let navigation = "navigation"
-    static let interaction = "interaction"
-    static let lifecycle = "lifecycle"
+public enum TentaclesEventCategory: String, AnalyticsEventCategory {
+    case lifecyle
+    case navigation
+    case interaction
+    case valueProposition
+
+    
+    public var name: String {
+        self.rawValue
+    }
 }

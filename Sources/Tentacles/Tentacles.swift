@@ -15,6 +15,7 @@ public class Tentacles: AnalyticsRegister {
     private var middlewares = [Middleware]()
     private var valuePropositionSessionManager: ValuePropositionSessionManager
     private var valuePropositionEvents: AnyCancellable?
+    
     public init() {
         self.valuePropositionSessionManager = ValuePropositionSessionManager()
     }

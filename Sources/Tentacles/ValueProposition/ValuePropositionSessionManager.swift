@@ -7,6 +7,12 @@
 
 import Foundation
 import Combine
+#if canImport (AppKit)
+import AppKit
+#endif
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// This class manages the activities and provides a publisher to communicate activities with changed status, consumer is usually a Tracking .
 ///
@@ -32,8 +38,9 @@ class ValuePropositionSessionManager {
     
     private var sessions = [ValuePropositionSession]()
 
+
     func process(for valueProposition: some ValueProposition,
-                       with action: ValuePropositionAction) {
+                 with action: ValuePropositionAction) {
         let session: ValuePropositionSession
         if let index = getFirstIndexEqualSession(for: valueProposition) {
             do {
@@ -43,7 +50,6 @@ class ValuePropositionSessionManager {
             } catch {
                 _eventPublisher.send(.failure(error))
             }
-          
         } else {
             do {
                 session = try createInitialSession(for: valueProposition,
@@ -60,7 +66,7 @@ class ValuePropositionSessionManager {
         var session = sessions[index]
         let newStatus = try createStatus(from: session, and: action.status)
         session.status = newStatus
-        updateSessions(session: session, index: index)
+        update(session, index: index)
         return session
     }
     
@@ -75,7 +81,7 @@ class ValuePropositionSessionManager {
         }
     }
     
-    private func updateSessions(session: ValuePropositionSession, index: Int) {
+    private func update(_ session: ValuePropositionSession, index: Int) {
         switch session.status {
         case .opened, .started, .paused:
             sessions[index] = session
@@ -83,11 +89,6 @@ class ValuePropositionSessionManager {
             sessions.remove(at: index)
         }
     }
-    
-    private func refreshSessions() {
-        
-    }
-
     
     private func getFirstIndexEqualSession(for valueProposition: any ValueProposition) -> Int? {
         sessions.firstIndex { valueProposition.isEqual(to: $0.valueProposition) }
@@ -114,4 +115,63 @@ class ValuePropositionSessionManager {
                 session: session, action: actionStatus)
         }
     }
+    
+    //MARK: Background & Foreground Applifecycle
+
+#if canImport(UIKit) || canImport(AppKit)
+    private let notificationCenter: NotificationCenter
+    
+    init(notificationCenter: NotificationCenter = NotificationCenter.default) {
+        self.notificationCenter = notificationCenter
+        subscribeToBackgroundAndForegroundNotifications()
+    }
+    
+    private var willResignActive: AnyCancellable?
+    private var didBecomeActive: AnyCancellable?
+    /// Sessions before app went in to background, will be used to reset sessions in case
+    /// app enters foreground again.
+    private var cachedSessions = [ValuePropositionSession]()
+    private func subscribeToBackgroundAndForegroundNotifications() {
+        #if canImport(UIKit)
+        let willResignActiveNotification = UIApplication.willResignActiveNotification
+        let didBecomeActiveNotification = UIApplication.didBecomeActiveNotification
+        #elseif canImport(AppKit)
+        let willResignActiveNotification = NSApplication.willResignActiveNotification
+        let didBecomeActiveNotification = NSApplication.didBecomeActiveNotification
+        #endif
+        willResignActive = notificationCenter
+            .publisher(for: willResignActiveNotification)
+            .sink { [weak self] _ in
+                self?.processWillResign()
+            }
+        didBecomeActive = notificationCenter
+            .publisher(for: didBecomeActiveNotification)
+            .sink { [weak self] _ in
+                self?.processDidBecomeActive()
+            }
+    }
+    
+    private func processWillResign() {
+        cachedSessions = sessions
+        for (index, session) in sessions.enumerated() {
+            var newSession = session
+            newSession.status = .canceled
+            update(newSession, index: index)
+            _eventPublisher.send(.success(newSession
+                .createRawAnalyticsEvent(trigger: TentaclesEventTrigger.willResignActive)))
+        }
+    }
+    
+    private func processDidBecomeActive() {
+        var newSessions = cachedSessions
+        newSessions.enumerated().forEach { (index, _ ) in
+            newSessions[index].reset()
+            _eventPublisher.send(.success(
+                newSessions[index].createRawAnalyticsEvent(
+                    trigger: TentaclesEventTrigger.didEnterForeground)))
+        }
+        self.sessions = newSessions
+        cachedSessions = []
+    }
+#endif
 }

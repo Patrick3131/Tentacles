@@ -53,7 +53,7 @@ If a prohibited status update occurs a non fatal error event is forwarded and th
 
 - What happens if the app goes in to background(-> all sessions are completed)
 
-- What happens if the app comes back in to foreground( -> new sessions are created and set to open)
+- What happens if the app comes back in to foreground( -> new sessions are created and set to previous state)
 - More than one session of the same value proposition?
 
 ```

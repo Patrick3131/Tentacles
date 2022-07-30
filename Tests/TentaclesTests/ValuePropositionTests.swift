@@ -7,16 +7,22 @@
 
 import XCTest
 import Tentacles
+#if canImport(UIKit)
+import UIKit
+#endif
+#if canImport(AppKit)
+import AppKit
+#endif
 
 final class ValuePropositionTests: XCTestCase {
-    enum EventStatus: String {
+    private enum EventStatus: String {
         case opened
         case started
         case paused
         case completed
         case canceled
     }
-    enum Result {
+    private enum Result {
         case success
         case error
     }
@@ -44,180 +50,182 @@ final class ValuePropositionTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
     
-    func testOpenPauseCompleteEvents() throws {
-        testValueProposition(for: [.open(),.pause(), .complete()],
-                             with: [.success, .error, .error],
-                             numberOfEventsThatShouldBeReported: 1)
-    }
-    
     func testOpenStartCompleteEvents() throws {
-        testValueProposition(for: [.open(),.start(),.complete()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.open(),.start(),.complete()],
                              with: [.success, .success, .success],
                              numberOfEventsThatShouldBeReported: 3)
     }
     
+    func testOpenPauseCompleteEvents() throws {
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.open(),.pause(), .complete()],
+                             with: [.success, .error, .error],
+                             numberOfEventsThatShouldBeReported: 1)
+    }
+    
     func testOpenStartPauseStartCompleteEvents() throws {
-        testValueProposition(for: [.open(), .start(), .pause(), .start(), .complete()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.open(), .start(), .pause(), .start(), .complete()],
                              with: [.success, .success, .success, .success, .success],
                              numberOfEventsThatShouldBeReported: 5)
     }
     
     func testOpenStartPauseStartPauseStartCompleteEvents() throws {
-        testValueProposition(for: [.open(),.start(),.pause(),.start(),.pause(),.start(),.complete()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.open(),.start(),.pause(),.start(),.pause(),.start(),.complete()],
                              with: [.success, .success, .success, .success, .success, .success, .success],
                              numberOfEventsThatShouldBeReported: 7)
     }
     
     func testOpenStartPauseStartPauseStartCancelEvents() throws {
-        testValueProposition(for: [.open(),.start(),.pause(),.start(),.pause(),.start(),.cancel()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.open(),.start(),.pause(),.start(),.pause(),.start(),.cancel()],
                              with: [.success, .success, .success, .success, .success, .success, .success],
                              numberOfEventsThatShouldBeReported: 7)
     }
     
     func testOpenStartCancelEvents() throws {
-        testValueProposition(for: [.open(),.start(),.cancel()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.open(),.start(),.cancel()],
                              with: [.success, .success, .success],
                              numberOfEventsThatShouldBeReported: 3)
     }
     
     func testStartCompleteEvents() throws {
-        testValueProposition(for: [.start(), .complete()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.start(), .complete()],
                              with: [.error, .error],
                              numberOfEventsThatShouldBeReported: 0)
     }
     
     func testStartCancelEvents() throws {
-        testValueProposition(for: [.start(),.cancel()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.start(),.cancel()],
                              with: [.error, .error],
                              numberOfEventsThatShouldBeReported: 0)
     }
     
     func testOpenEvent() throws {
-        testValueProposition(for: [.open()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.open()],
                              with: [.success],
                              numberOfEventsThatShouldBeReported: 1)
     }
     
     func testOpenCancelEvent() throws {
-        testValueProposition(for: [.open(), .cancel()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.open(), .cancel()],
                              with: [.success, .success],
                              numberOfEventsThatShouldBeReported: 2)
     }
     
     func testOpenCompleteEvent() throws {
-        testValueProposition(for: [.open(), .complete()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.open(), .complete()],
                              with: [.success, .error],
                              numberOfEventsThatShouldBeReported: 1)
     }
     
     func testOpenPauseEvent() throws {
-        testValueProposition(for: [.open(), .pause()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.open(), .pause()],
                              with: [.success, .error],
                              numberOfEventsThatShouldBeReported: 1)
     }
     
     func testStartEvent() throws {
-        testValueProposition(for: [.open()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.open()],
                              with: [.success],
                              numberOfEventsThatShouldBeReported: 1)
     }
     
     func testPauseEvent() throws {
-        testValueProposition(for: [.pause()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.pause()],
                              with: [.error],
                              numberOfEventsThatShouldBeReported: 0)
     }
     
     func testCancelEvent() throws {
-        testValueProposition(for: [.cancel()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.cancel()],
                              with: [.error],
                              numberOfEventsThatShouldBeReported: 0)
     }
     
     func testCompleteEvent() throws {
-        testValueProposition(for: [.cancel()],
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.cancel()],
                              with: [.error],
                              numberOfEventsThatShouldBeReported: 0)
     }
     
     func testDeallocationAfterCancel() throws {
-        
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.open(),.cancel(),.open()],
+                             with: [.success,.success,.success],
+                             numberOfEventsThatShouldBeReported: 3)
+        XCTAssertTrue(isSessionSimilar(at: 0, and: 1))
+        XCTAssertFalse(isSessionSimilar(at: 1, and: 2))
     }
     
     func testDeallocationAfterComplete() throws {
-        
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.open(),.start(),.complete(),.open()],
+                             with: [.success,.success,.success,.success],
+                             numberOfEventsThatShouldBeReported: 4)
+        XCTAssertTrue(isSessionSimilar(at: 0, and: 2))
+        XCTAssertFalse(isSessionSimilar(at: 2, and: 3))
     }
+    
+    #if canImport(UIKit) || canImport(AppKit)
+    func testAppLifecycleFromBackgroundToForeground() throws {
+        #if canImport(AppKit)
+        let willResignActivePostNotification = NSApplication.willResignActiveNotification
+        let didBecomeActivePostNotification = NSApplication.didBecomeActiveNotification
+        #endif
+        #if canImport(UIKit)
+        let willResignActivePostNotification = UIApplication.willResignActiveNotification
+        let didBecomeActivePostNotification = UIApplication.didBecomeActiveNotification
+        #endif
+        evaluatePreConditionCeroEventsReported()
+        trackValueProposition(watchingVideovalueProposition,
+                              for: [.open(),.start()])
+        NotificationCenter.default.post(name: willResignActivePostNotification,
+                                        object: nil)
+        evaluateEvent(for: .opened, with: .success, at: 0)
+        evaluateEvent(for: .started, with: .success, at: 1)
+        evaluateEvent(for: .canceled, with: .success, trigger: .willResignActive, at: 2)
+        NotificationCenter.default.post(name: didBecomeActivePostNotification, object: nil)
+        evaluateEvent(for: .started, with: .success, trigger: .didEnterForeground, at: 3)
+
+        evaluateNumberOfEventsReported(4)
+    }
+    #endif
     
     /// events derived from the same session share the same uuid
     func testRelationBetweenEvents() throws {
-        
+        testValueProposition(watchingVideovalueProposition,
+                             for: [.open(), .start()],
+                             with: [.success,.success],
+                             numberOfEventsThatShouldBeReported: 2)
+        XCTAssertTrue(isSessionSimilar(at: 0, and: 1))
     }
     
-    func testValueProposition(for actions: [ValuePropositionAction],
-                              with expectedResults: [Result],
-                              numberOfEventsThatShouldBeReported: Int) {
-        testPreConditionCeroEventsReported()
-        trackValueProposition(for: actions)
-        let statuses = actions.map { action -> EventStatus in
-            switch action.status {
-            case .open: return .opened
-            case .start: return .started
-            case .pause: return .paused
-            case .complete: return .completed
-            case .cancel: return .canceled
-            }
-        }
-        statuses.enumerated().forEach { index, status in
-            let result = expectedResults[index]
-            evaluateEvent(for: status,
-                          with: result,
-                          at: index)
-        }
-        evaluateNumberOfEventsReported(numberOfEventsThatShouldBeReported)
-    }
-    
-    func trackValueProposition(for actions: [ValuePropositionAction]) {
-        trackValueProposition(for: watchingVideovalueProposition, with: actions)
-    }
-    
-    func trackValueProposition(for valueProposition: some ValueProposition,
-                               with actions: [ValuePropositionAction]) {
-        actions.forEach { tentacles.track(for: valueProposition, with: $0) }
-    }
-    
-    func evaluateEvent(for status: EventStatus,
-                       with result: Result,
-                       at index: Int) {
-        let event = reporterStub.results[index]
-        switch result {
-        case .success:
-            if let event = event as? RawAnalyticsEvent {
-                evaluate(event: event, for: status)
-            }
-        case .error:
-            if let error = event as? Error {
-                print(error.localizedDescription)
-            }
-        }
-    }
-    
-    func testPreConditionCeroEventsReported() {
-        XCTAssertEqual(reporterStub.results.count, 0)
-    }
-    
-    func evaluateNumberOfEventsReported(_ count: Int) {
-        let countAnalyticsEvents = reporterStub.results.filter { ($0 as? RawAnalyticsEvent) != nil }.count
-        XCTAssertEqual(countAnalyticsEvents, count)
-    }
-    
-    func evaluate(event: RawAnalyticsEvent, for status: EventStatus) {
-        XCTAssertEqual(event.name,"watchingVideo")
-        XCTAssertEqual(event.attributes["duration"] as? Double, duration)
-        XCTAssertEqual(event.attributes["videoName"] as? String, videoName)
-        XCTAssertEqual(event.attributes["language"] as? String, language)
-        XCTAssertEqual(event.attributes["category"] as? String, .valueProposition)
-        XCTAssertEqual(event.attributes["trigger"] as? String, .clicked)
-        XCTAssertEqual(event.attributes["status"] as? String, status.rawValue)
+    func testDifferentValuePropositions() throws {
+        evaluatePreConditionCeroEventsReported()
+        let attributes = WatchingVideoValueProposition.Attributes(videoName: "Studying SwiftUI",
+                                                                  language: "English",
+                                                                  duration: 435)
+        let otherValueProposition = WatchingVideoValueProposition(attributes: attributes)
+        trackValueProposition(watchingVideovalueProposition, for: [.open(),.start(),.complete()])
+        trackValueProposition(otherValueProposition, for: [.open(),.start(),.complete()])
+        XCTAssertTrue(isSessionSimilar(at: 0, and: 2))
+        XCTAssertFalse(isSessionSimilar(at: 0, and: 3))
+        XCTAssertTrue(isSessionSimilar(at: 3, and: 5))
+        evaluateNumberOfEventsReported(6)
     }
     
     func testValuePropositionIsEqual() throws {
@@ -232,9 +240,86 @@ final class ValuePropositionTests: XCTestCase {
         XCTAssertFalse(isNotEqual)
     }
     
-    func extractUUIDFromEvent(event: any AnalyticsEvent) -> UUID? {
-        let attributesSession = event.otherAttributes?.serialiseToValue()["valuePropostionAttributes"] as? [String: AnyHashable]
-        let attributesValuePropostion = attributesSession?["uuid"] as? UUID
-        return attributesValuePropostion
+    private func testValueProposition(_ valueProposition: some ValueProposition,
+                              for actions: [ValuePropositionAction],
+                              with expectedResults: [Result],
+                              numberOfEventsThatShouldBeReported: Int) {
+        evaluatePreConditionCeroEventsReported()
+        trackValueProposition(valueProposition, for: actions)
+        let statuses = actions.map { action -> EventStatus in
+            switch action.status {
+            case .open: return .opened
+            case .start: return .started
+            case .pause: return .paused
+            case .complete: return .completed
+            case .cancel: return .canceled
+            }
+        }
+        evaluateEvents(for: statuses, with: expectedResults)
+        evaluateNumberOfEventsReported(numberOfEventsThatShouldBeReported)
+    }
+    
+    private func trackValueProposition(_ valueProposition: some ValueProposition,
+                               for actions: [ValuePropositionAction]) {
+        trackValueProposition(for: valueProposition, with: actions)
+    }
+    
+    private func trackValueProposition(for valueProposition: some ValueProposition,
+                               with actions: [ValuePropositionAction]) {
+        actions.forEach { tentacles.track(for: valueProposition, with: $0) }
+    }
+    
+    private func evaluateEvents(for statuses: [EventStatus],
+                        with expectedResults: [Result]) {
+        statuses.enumerated().forEach { index, status in
+            let result = expectedResults[index]
+            evaluateEvent(for: status,
+                          with: result,
+                          at: index)
+        }
+    }
+    
+    private func evaluateEvent(for status: EventStatus,
+                       with result: Result,
+                       trigger: TentaclesEventTrigger = .clicked,
+                       at index: Int) {
+        let event = reporterStub.results[index]
+        switch result {
+        case .success:
+            if let event = event as? RawAnalyticsEvent {
+                evaluate(event: event, for: status, trigger: trigger)
+            }
+        case .error:
+            if let error = event as? Error {
+                print(error.localizedDescription)
+            }
+        }
+    }
+    
+    private func isSessionSimilar(at index: Int, and otherIndex: Int) -> Bool {
+        guard let event = reporterStub.results[index] as? RawAnalyticsEvent,
+           let otherEvent = reporterStub.results[otherIndex] as? RawAnalyticsEvent else { return false }
+        return event.attributes["uuid"] == otherEvent.attributes["uuid"]
+    }
+    
+    private func evaluatePreConditionCeroEventsReported() {
+        XCTAssertEqual(reporterStub.results.count, 0)
+    }
+    
+    private func evaluateNumberOfEventsReported(_ count: Int) {
+        let countAnalyticsEvents = reporterStub.results.filter { ($0 as? RawAnalyticsEvent) != nil }.count
+        XCTAssertEqual(countAnalyticsEvents, count)
+    }
+    
+    private func evaluate(event: RawAnalyticsEvent,
+                  for status: EventStatus,
+                  trigger: TentaclesEventTrigger = .clicked) {
+        XCTAssertEqual(event.name,"watchingVideo")
+        XCTAssertEqual(event.attributes["duration"] as? Double, duration)
+        XCTAssertEqual(event.attributes["videoName"] as? String, videoName)
+        XCTAssertEqual(event.attributes["language"] as? String, language)
+        XCTAssertEqual(event.attributes["category"] as? String, TentaclesEventCategory.valueProposition.name)
+        XCTAssertEqual(event.attributes["trigger"] as? String, trigger.rawValue)
+        XCTAssertEqual(event.attributes["status"] as? String, status.rawValue)
     }
 }

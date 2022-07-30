@@ -31,35 +31,35 @@ public struct ValuePropositionAction {
 }
 
 public extension ValuePropositionAction {
-    static func open(trigger: AnalyticsEventTrigger = .clicked,
+    static func open(trigger: TentaclesEventTrigger = .clicked,
                      attributes: TentacleAttributes? = nil) -> Self {
         Self.init(status: .open,
                   trigger: trigger,
                   attributes: attributes)
     }
     
-    static func start(trigger: AnalyticsEventTrigger = .clicked,
+    static func start(trigger: TentaclesEventTrigger = .clicked,
                       attributes: TentacleAttributes? = nil) -> Self {
         Self.init(status: .start,
                   trigger: trigger,
                   attributes: attributes)
     }
     
-    static func pause(trigger: AnalyticsEventTrigger = .clicked,
+    static func pause(trigger: TentaclesEventTrigger = .clicked,
                       attributes: TentacleAttributes? = nil) -> Self {
         Self.init(status: .pause,
                   trigger: trigger,
                   attributes: attributes)
     }
     
-    static func complete(trigger: AnalyticsEventTrigger = .clicked,
+    static func complete(trigger: TentaclesEventTrigger = .clicked,
                       attributes: TentacleAttributes? = nil) -> Self {
         Self.init(status: .complete,
                   trigger: trigger,
                   attributes: attributes)
     }
     
-    static func cancel(trigger: AnalyticsEventTrigger = .clicked,
+    static func cancel(trigger: TentaclesEventTrigger = .clicked,
                       attributes: TentacleAttributes? = nil) -> Self {
         Self.init(status: .cancel,
                   trigger: trigger,

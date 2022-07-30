@@ -7,13 +7,17 @@
 
 import Foundation
 
-public typealias AnalyticsEventTrigger = String
+public protocol AnalyticsEventTrigger {
+    var name: String { get }
+}
 
-public extension AnalyticsEventTrigger {
-    static let clicked = "clicked"
-    static let automatically = "automatically"
-    static let navigated = "navigated"
-    static let openedScreen = "openedScreen"
-    static let didEnterBackground = "didEnterBackground"
-    static let didEnterForeground = "didEnterForeground"
+public enum TentaclesEventTrigger: String, AnalyticsEventTrigger {
+    case clicked
+    case didEnterForeground
+    case screenDidAppear
+    case willResignActive
+    
+    public var name: String {
+        self.rawValue
+    }
 }
