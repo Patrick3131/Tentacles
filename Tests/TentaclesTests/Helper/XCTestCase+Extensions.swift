@@ -18,4 +18,16 @@ extension XCTestCase {
         commonMiddlewares.forEach { tentacles.register($0)}
         return tentacles
     }
+    
+    func evaluateNumberOfEventsReported(
+        _ count: Int,
+        for reporterStub: AnalyticsReporterStub) {
+            let countAnalyticsEvents = reporterStub.results.filter { ($0 as? RawAnalyticsEvent) != nil }.count
+            XCTAssertEqual(countAnalyticsEvents, count)
+        }
+    
+    func evaluatePreConditionCeroEventsReported(
+        reporterStub: AnalyticsReporterStub) {
+            XCTAssertEqual(reporterStub.results.count, 0)
+        }
 }

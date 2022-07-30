@@ -13,11 +13,11 @@ public class Tentacles: AnalyticsRegister {
     private var analyticsUnit = [AnalyticsUnit]()
     private var errorReporters = [NonFatalErrorTracking]()
     private var middlewares = [Middleware]()
-    private var valuePropositionSessionManager: ValuePropositionSessionManager
+    private var valuePropositionSessionManager: ValuePropositionSessionManager?
     private var valuePropositionEvents: AnyCancellable?
     
     public init() {
-        self.valuePropositionSessionManager = ValuePropositionSessionManager()
+        
     }
     
     public func register(_ middleware: Middleware) {
@@ -39,16 +39,19 @@ public class Tentacles: AnalyticsRegister {
     }
     
     fileprivate func track(_ event: RawAnalyticsEvent) {
-        var newEvent = event
+        var newEvent: RawAnalyticsEvent? = event
         middlewares.forEach { middleware in
-            newEvent = middleware.closure(newEvent)
+            newEvent = middleware.closure(event)
         }
         analyticsUnit.forEach { (reporter, middlewares) in
-            var reporterSpecificEvent = newEvent
             middlewares.forEach { middleware in
-                reporterSpecificEvent = middleware.closure(reporterSpecificEvent)
+                if let unwrappedEvent = newEvent {
+                    newEvent = middleware.closure(unwrappedEvent)
+                }
             }
-            reporter.report(event: reporterSpecificEvent)
+            if let newEvent {
+                reporter.report(event: newEvent)
+            }
         }
     }
 }
@@ -67,8 +70,11 @@ extension Tentacles: NonFatalErrorTracking {
 
 extension Tentacles: ValuePropositionTracking {
     public func track(for valueProposition: any ValueProposition, with action: ValuePropositionAction) {
-        if valuePropositionEvents == nil {
-            valuePropositionEvents = valuePropositionSessionManager.eventPublisher
+        if valuePropositionSessionManager == nil,
+           valuePropositionEvents == nil {
+            valuePropositionSessionManager = .init()
+            valuePropositionEvents = valuePropositionSessionManager?
+                .eventPublisher
                 .sink(receiveValue: { [weak self] results in
                     switch results {
                     case .success(let event):
@@ -78,7 +84,7 @@ extension Tentacles: ValuePropositionTracking {
                     }
                 })
         }
-        valuePropositionSessionManager.process(for: valueProposition, with: action)
+        valuePropositionSessionManager?.process(for: valueProposition, with: action)
     }
 }
 

@@ -299,12 +299,11 @@ final class ValuePropositionTests: XCTestCase {
     }
     
     private func evaluatePreConditionCeroEventsReported() {
-        XCTAssertEqual(reporterStub.results.count, 0)
+        evaluatePreConditionCeroEventsReported(reporterStub: reporterStub)
     }
     
     private func evaluateNumberOfEventsReported(_ count: Int) {
-        let countAnalyticsEvents = reporterStub.results.filter { ($0 as? RawAnalyticsEvent) != nil }.count
-        XCTAssertEqual(countAnalyticsEvents, count)
+        evaluateNumberOfEventsReported(count, for: reporterStub)
     }
     
     private func evaluate(event: RawAnalyticsEvent,

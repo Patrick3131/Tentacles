@@ -25,6 +25,10 @@ final class MiddlewareTests: XCTestCase {
 
     func testMiddlewareForSpecificReporter() throws {
         let otherReporter = AnalyticsReporterStub()
+        
+        evaluatePreConditionCeroEventsReported(reporterStub: reporter)
+        evaluatePreConditionCeroEventsReported(reporterStub: otherReporter)
+        
         tentacles.register(analyticsReporter: otherReporter, middlewares: [.capitalisedAttributeKeys])
         tentacles.track(AnalyticsEventStub())
         if let event = reporter.isResultEvent(index: 0) {
@@ -43,9 +47,12 @@ final class MiddlewareTests: XCTestCase {
             XCTAssertEqual(event.attributes["Test"],
                            123)
         }
+        evaluateNumberOfEventsReported(1, for: reporter)
+        evaluateNumberOfEventsReported(1, for: otherReporter)
     }
     
     func testCapitalisedAttributeKeys() throws {
+        evaluatePreConditionCeroEventsReported(reporterStub: reporter)
         tentacles.register(.capitalisedAttributeKeys)
         tentacles.track(AnalyticsEventStub())
         if let event = reporter.isResultEvent(index: 0) {
@@ -56,14 +63,20 @@ final class MiddlewareTests: XCTestCase {
             XCTAssertEqual(event.attributes["Test"],
                            123)
         }
+        evaluateNumberOfEventsReported(1, for: reporter)
     }
     
-
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+    func testSkipSpecificEvent() throws {
+        evaluatePreConditionCeroEventsReported(reporterStub: reporter)
+        tentacles.register(.skipTestEvent)
+        tentacles.track(AnalyticsEventStub())
+        tentacles.track(AnalyticsEventStub(
+            category: TentaclesEventCategory.interaction,
+            trigger: TentaclesEventTrigger.clicked,
+            name: "Test2"))
+        if let event = reporter.isResultEvent(index: 0) {
+            XCTAssertEqual(event.name, "Test2")
         }
+        evaluateNumberOfEventsReported(1, for: reporter)
     }
 }
