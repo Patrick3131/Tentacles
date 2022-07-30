@@ -32,32 +32,36 @@ class ValuePropositionSessionManager {
         case initialActionNeedsToBeOpen
         case prohibitedStateUpdate(session: ValuePropositionSession,
                                    action: ValuePropositionAction.Status)
+        case selfWasNil
     }
     private let _eventPublisher: PassthroughSubject<Result<RawAnalyticsEvent, Swift.Error>, Never> = .init()
     lazy var eventPublisher: AnyPublisher<Result<RawAnalyticsEvent, Swift.Error>, Never> = _eventPublisher.eraseToAnyPublisher()
     
     private var sessions = [ValuePropositionSession]()
-
-
+    
     func process(for valueProposition: some ValueProposition,
                  with action: ValuePropositionAction) {
-        let session: ValuePropositionSession
-        if let index = getFirstIndexEqualSession(for: valueProposition) {
-            do {
-                session = try processActiveSession(for: action,
-                                                   at: index)
-                _eventPublisher.send(.success(session.createRawAnalyticsEvent(action: action)))
-            } catch {
-                _eventPublisher.send(.failure(error))
-            }
+        if let index = getFirstIndexSimilarValueProposition(as: valueProposition) {
+            process(action: action) { [weak self] in
+                guard let self = self else { throw Error.selfWasNil}
+                return try self.processActiveSession(for: action,
+                                                     at: index) }
         } else {
-            do {
-                session = try createInitialSession(for: valueProposition,
-                                                   and: action)
-                _eventPublisher.send(.success(session.createRawAnalyticsEvent(action: action)))
-            } catch {
-                _eventPublisher.send(.failure(error))
-            }
+            process(action: action) { [weak self] in
+                guard let self = self else { throw Error.selfWasNil}
+                return try self.initialiseSession(for: valueProposition,
+                                                  and: action) }
+        }
+    }
+    
+    func process(action: ValuePropositionAction,
+                 closure: () throws -> ValuePropositionSession) {
+        do {
+            let session = try closure()
+            publishEvent(for: session,
+                         with: action)
+        } catch {
+            publish(error)
         }
     }
     
@@ -70,10 +74,12 @@ class ValuePropositionSessionManager {
         return session
     }
     
-    private func createInitialSession(for valueProposition: any ValueProposition,
-                                      and action: ValuePropositionAction) throws -> ValuePropositionSession {
+    private func initialiseSession(for valueProposition: any ValueProposition,
+                                   and action: ValuePropositionAction)
+    throws -> ValuePropositionSession {
         if action.status == .open {
-            let newSession = ValuePropositionSession(valueProposition: valueProposition)
+            let newSession = ValuePropositionSession(
+                valueProposition: valueProposition)
             sessions.append(newSession)
             return newSession
         } else {
@@ -85,12 +91,12 @@ class ValuePropositionSessionManager {
         switch session.status {
         case .opened, .started, .paused:
             sessions[index] = session
-        case .canceled, .completed :
+        case .canceled, .completed:
             sessions.remove(at: index)
         }
     }
     
-    private func getFirstIndexEqualSession(for valueProposition: any ValueProposition) -> Int? {
+    private func getFirstIndexSimilarValueProposition(as valueProposition: any ValueProposition) -> Int? {
         sessions.firstIndex { valueProposition.isEqual(to: $0.valueProposition) }
     }
     
@@ -116,8 +122,24 @@ class ValuePropositionSessionManager {
         }
     }
     
+    private func publish(_ error: Swift.Error) {
+        _eventPublisher.send(.failure(error))
+    }
+    
+    private func publishEvent(for session: ValuePropositionSession,
+                              with action: ValuePropositionAction) {
+        _eventPublisher.send(.success(
+            session.createRawAnalyticsEvent(action: action)))
+    }
+    
+    private func publishEvent(for session: ValuePropositionSession,
+                              with trigger: TentaclesEventTrigger) {
+        _eventPublisher.send(.success(
+            session.createRawAnalyticsEvent(trigger: trigger)))
+    }
+    
     //MARK: Background & Foreground Applifecycle
-
+    
 #if canImport(UIKit) || canImport(AppKit)
     private let notificationCenter: NotificationCenter
     
@@ -132,13 +154,13 @@ class ValuePropositionSessionManager {
     /// app enters foreground again.
     private var cachedSessions = [ValuePropositionSession]()
     private func subscribeToBackgroundAndForegroundNotifications() {
-        #if canImport(UIKit)
+#if canImport(UIKit)
         let willResignActiveNotification = UIApplication.willResignActiveNotification
         let didBecomeActiveNotification = UIApplication.didBecomeActiveNotification
-        #elseif canImport(AppKit)
+#elseif canImport(AppKit)
         let willResignActiveNotification = NSApplication.willResignActiveNotification
         let didBecomeActiveNotification = NSApplication.didBecomeActiveNotification
-        #endif
+#endif
         willResignActive = notificationCenter
             .publisher(for: willResignActiveNotification)
             .sink { [weak self] _ in
@@ -157,8 +179,8 @@ class ValuePropositionSessionManager {
             var newSession = session
             newSession.status = .canceled
             update(newSession, index: index)
-            _eventPublisher.send(.success(newSession
-                .createRawAnalyticsEvent(trigger: TentaclesEventTrigger.willResignActive)))
+            publishEvent(for: newSession,
+                         with: TentaclesEventTrigger.willResignActive)
         }
     }
     
@@ -166,9 +188,8 @@ class ValuePropositionSessionManager {
         var newSessions = cachedSessions
         newSessions.enumerated().forEach { (index, _ ) in
             newSessions[index].reset()
-            _eventPublisher.send(.success(
-                newSessions[index].createRawAnalyticsEvent(
-                    trigger: TentaclesEventTrigger.didEnterForeground)))
+            publishEvent(for: newSessions[index],
+                         with: TentaclesEventTrigger.didEnterForeground)
         }
         self.sessions = newSessions
         cachedSessions = []

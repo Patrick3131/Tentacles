@@ -197,7 +197,8 @@ final class ValuePropositionTests: XCTestCase {
         evaluateEvent(for: .canceled, with: .success, trigger: .willResignActive, at: 2)
         NotificationCenter.default.post(name: didBecomeActivePostNotification, object: nil)
         evaluateEvent(for: .started, with: .success, trigger: .didEnterForeground, at: 3)
-
+        XCTAssertTrue(isSessionSimilar(at: 0, and: 2))
+        XCTAssertFalse(isSessionSimilar(at: 2, and: 3))
         evaluateNumberOfEventsReported(4)
     }
     #endif
