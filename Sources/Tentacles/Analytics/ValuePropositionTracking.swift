@@ -9,5 +9,5 @@ import Foundation
 
 public protocol ValuePropositionTracking {
     func track(for valueProposition: any ValueProposition,
-               with action: ValuePropositionAction)
+               with action: ValuePropositionAction) async
 }

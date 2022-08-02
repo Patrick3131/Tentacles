@@ -7,6 +7,12 @@
 
 import Foundation
 import Combine
+#if canImport (AppKit)
+import AppKit
+#endif
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public class Tentacles: AnalyticsRegister {
     private typealias AnalyticsUnit = (reporter: AnalyticsReporter, middlewares: [Middleware])
@@ -14,11 +20,21 @@ public class Tentacles: AnalyticsRegister {
     private var errorReporters = [NonFatalErrorTracking]()
     private var middlewares = [Middleware]()
     private var valuePropositionSessionManager: ValuePropositionSessionManager?
-    private var valuePropositionEvents: AnyCancellable?
+    private var valuePropositionEventsSubscription: AnyCancellable?
     
-    public init() {
-        
+#if canImport(UIKit) || canImport(AppKit)
+    private var willResignActiveSubscription: AnyCancellable?
+    private var didBecomeActiveSubscription: AnyCancellable?
+    private let notificationCenter: NotificationCenter
+    
+    public init(notificationCenter: NotificationCenter = NotificationCenter.default) {
+        self.notificationCenter = notificationCenter
+        subscribeToBackgroundAndForegroundNotifications()
     }
+    
+#else
+    public init() {}
+#endif
     
     public func register(_ middleware: Middleware) {
         middlewares.append(middleware)
@@ -36,6 +52,7 @@ public class Tentacles: AnalyticsRegister {
     public func resetRegister() {
         analyticsUnit = []
         errorReporters = []
+        middlewares = []
     }
     
     fileprivate func track(_ event: RawAnalyticsEvent) {
@@ -69,11 +86,11 @@ extension Tentacles: NonFatalErrorTracking {
 }
 
 extension Tentacles: ValuePropositionTracking {
-    public func track(for valueProposition: any ValueProposition, with action: ValuePropositionAction) {
+    public func track(for valueProposition: any ValueProposition, with action: ValuePropositionAction) async {
         if valuePropositionSessionManager == nil,
-           valuePropositionEvents == nil {
+           valuePropositionEventsSubscription == nil {
             valuePropositionSessionManager = .init()
-            valuePropositionEvents = valuePropositionSessionManager?
+            valuePropositionEventsSubscription = valuePropositionSessionManager?
                 .eventPublisher
                 .sink(receiveValue: { [weak self] results in
                     switch results {
@@ -84,8 +101,35 @@ extension Tentacles: ValuePropositionTracking {
                     }
                 })
         }
-        valuePropositionSessionManager?.process(for: valueProposition, with: action)
+        await valuePropositionSessionManager?.process(for: valueProposition,
+                                                      with: action)
     }
+    
+#if canImport(UIKit) || canImport(AppKit)
+    private func subscribeToBackgroundAndForegroundNotifications() {
+#if canImport(UIKit)
+        let willResignActiveNotification = UIApplication.willResignActiveNotification
+        let didBecomeActiveNotification = UIApplication.didBecomeActiveNotification
+#elseif canImport(AppKit)
+        let willResignActiveNotification = NSApplication.willResignActiveNotification
+        let didBecomeActiveNotification = NSApplication.didBecomeActiveNotification
+#endif
+        willResignActiveSubscription = notificationCenter
+            .publisher(for: willResignActiveNotification)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                Task {
+                    await self.valuePropositionSessionManager?.processWillResign()
+                }
+            }
+        didBecomeActiveSubscription = notificationCenter
+            .publisher(for: didBecomeActiveNotification)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                Task {
+                    await self.valuePropositionSessionManager?.processDidBecomeActive()
+                }
+            }
+    }
+#endif
 }
-
-

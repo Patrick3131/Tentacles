@@ -7,12 +7,6 @@
 
 import Foundation
 import Combine
-#if canImport (AppKit)
-import AppKit
-#endif
-#if canImport(UIKit)
-import UIKit
-#endif
 
 /// This class manages the activities and provides a publisher to communicate activities with changed status, consumer is usually a Tracking .
 ///
@@ -27,7 +21,7 @@ import UIKit
 ///
 /// Discussion about adding additional attributes via status to the tracking event later on in the lifecycle of the Activity:
 /// it doesnt make sense to add them to the activity itself, because then the attributes are also added to later events i.e to completed even if they were only supposed to be used for paused. So if they are going to be added then via the status enum.
-class ValuePropositionSessionManager {
+actor ValuePropositionSessionManager {
     enum Error: Swift.Error {
         case initialActionNeedsToBeOpen
         case prohibitedStateUpdate(session: ValuePropositionSession,
@@ -35,34 +29,25 @@ class ValuePropositionSessionManager {
         case selfWasNil
     }
     private let _eventPublisher: PassthroughSubject<Result<RawAnalyticsEvent, Swift.Error>, Never> = .init()
-    lazy var eventPublisher: AnyPublisher<Result<RawAnalyticsEvent, Swift.Error>, Never> = _eventPublisher.eraseToAnyPublisher()
+    nonisolated lazy var eventPublisher = _eventPublisher.eraseToAnyPublisher()
     
     private var sessions = [ValuePropositionSession]()
     
     func process(for valueProposition: some ValueProposition,
                  with action: ValuePropositionAction) {
-        if let index = getFirstIndexSimilarValueProposition(as: valueProposition) {
-            process(action: action) { [weak self] in
-                guard let self = self else { throw Error.selfWasNil}
-                return try self.processActiveSession(for: action,
-                                                     at: index) }
-        } else {
-            process(action: action) { [weak self] in
-                guard let self = self else { throw Error.selfWasNil}
-                return try self.initialiseSession(for: valueProposition,
-                                                  and: action) }
-        }
-    }
-    
-    func process(action: ValuePropositionAction,
-                 closure: () throws -> ValuePropositionSession) {
-        do {
-            let session = try closure()
-            publishEvent(for: session,
-                         with: action)
-        } catch {
-            publish(error)
-        }
+            do {
+                let session: ValuePropositionSession
+                if let index = getFirstIndexSimilarValueProposition(as: valueProposition) {
+                    session = try processActiveSession(for: action,
+                                                           at: index)
+                } else {
+                    session = try initialiseSession(for: valueProposition,
+                                                        and: action)
+                }
+                publishEvent(for: session, with: action)
+            } catch {
+                publish(error)
+            }
     }
     
     private func processActiveSession(for action: ValuePropositionAction,
@@ -140,40 +125,11 @@ class ValuePropositionSessionManager {
     
     //MARK: Background & Foreground Applifecycle
     
-#if canImport(UIKit) || canImport(AppKit)
-    private let notificationCenter: NotificationCenter
-    
-    init(notificationCenter: NotificationCenter = NotificationCenter.default) {
-        self.notificationCenter = notificationCenter
-        subscribeToBackgroundAndForegroundNotifications()
-    }
-    
-    private var willResignActive: AnyCancellable?
-    private var didBecomeActive: AnyCancellable?
     /// Sessions before app went in to background, will be used to reset sessions in case
     /// app enters foreground again.
     private var cachedSessions = [ValuePropositionSession]()
-    private func subscribeToBackgroundAndForegroundNotifications() {
-#if canImport(UIKit)
-        let willResignActiveNotification = UIApplication.willResignActiveNotification
-        let didBecomeActiveNotification = UIApplication.didBecomeActiveNotification
-#elseif canImport(AppKit)
-        let willResignActiveNotification = NSApplication.willResignActiveNotification
-        let didBecomeActiveNotification = NSApplication.didBecomeActiveNotification
-#endif
-        willResignActive = notificationCenter
-            .publisher(for: willResignActiveNotification)
-            .sink { [weak self] _ in
-                self?.processWillResign()
-            }
-        didBecomeActive = notificationCenter
-            .publisher(for: didBecomeActiveNotification)
-            .sink { [weak self] _ in
-                self?.processDidBecomeActive()
-            }
-    }
-    
-    private func processWillResign() {
+
+    func processWillResign() {
         cachedSessions = sessions
         for (index, session) in sessions.enumerated() {
             var newSession = session
@@ -184,7 +140,7 @@ class ValuePropositionSessionManager {
         }
     }
     
-    private func processDidBecomeActive() {
+    func processDidBecomeActive() {
         var newSessions = cachedSessions
         newSessions.enumerated().forEach { (index, _ ) in
             newSessions[index].reset()
@@ -194,5 +150,4 @@ class ValuePropositionSessionManager {
         self.sessions = newSessions
         cachedSessions = []
     }
-#endif
 }

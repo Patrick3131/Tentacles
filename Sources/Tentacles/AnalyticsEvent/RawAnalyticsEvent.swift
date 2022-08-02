@@ -8,7 +8,9 @@
 import Foundation
 
 public struct RawAnalyticsEvent {
+    /// The name of the event being reported.
     public let name: String
+    /// Containing all additional attributes that are reported.
     public var attributes: AttributesValue
 }
 

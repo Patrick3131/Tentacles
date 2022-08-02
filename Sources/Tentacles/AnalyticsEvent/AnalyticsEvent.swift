@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Basic event that is used for tracking
+/// Event that can be tracked by AnalyticsEventTracking.
 public protocol AnalyticsEvent {
     associatedtype Attributes: TentacleAttributes
     var category: AnalyticsEventCategory { get }
@@ -15,7 +15,8 @@ public protocol AnalyticsEvent {
     /// Needs to be defined by the app.
     /// TentaclesEventTrigger offers default trigger cases, that can be used.
     var trigger: AnalyticsEventTrigger { get }
+    /// The name of the event being reported
     var name: String { get }
-    /// additional attributes that are valuebale for the event.
+    /// Additional attributes that are valuable for the event.
     var otherAttributes: Attributes? { get }
 }

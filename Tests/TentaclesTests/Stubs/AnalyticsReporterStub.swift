@@ -7,29 +7,64 @@
 
 import Foundation
 import Tentacles
+import Combine
 
 class AnalyticsReporterStub: AnalyticsReporter {
-    var results = [Any]()
+    /// Used to test sync code
+    var results = [Result<RawAnalyticsEvent, Error>]()
+    /// Used to test sync code
+    var errorResults: [Error] {
+        results.compactMap { result in
+            switch result {
+            case .success: return nil
+            case .failure(let error): return error
+            }
+        }
+    }
+    /// Used to test sync code
+    var eventResults: [RawAnalyticsEvent] {
+        results.compactMap { result in
+            switch result {
+            case .success(let event): return event
+            case .failure: return nil
+            }
+        }
+     }
+    private let _resultPublisher: PassthroughSubject<Result<RawAnalyticsEvent, Error>, Never> = .init()
+    /// Used to test async code
+    lazy var resultPublisher = _resultPublisher.eraseToAnyPublisher()
     
     func setup() {}
     
     func report(event: RawAnalyticsEvent) {
-        results.append(event)
+        results.append(.success(event))
+        _resultPublisher.send(.success(event))
     }
 }
 
 extension AnalyticsReporterStub: NonFatalErrorTracking {
     func track(_ error: Error) {
-        results.append(error)
+        results.append(.failure(error))
+        _resultPublisher.send(.failure(error))
     }
 }
 
 extension AnalyticsReporterStub {
     func isResultEvent(index: Int) -> RawAnalyticsEvent? {
-        results[index] as? RawAnalyticsEvent
+        let result = results[index]
+        switch result {
+        case .success(let event):
+            return event
+        case .failure: return nil
+        }
     }
     
     func isResultError(index: Int) -> Error? {
-        results[index] as? Error
+        let result = results[index]
+        switch result {
+        case .success: return nil
+        case .failure(let error):
+            return error
+        }
     }
 }

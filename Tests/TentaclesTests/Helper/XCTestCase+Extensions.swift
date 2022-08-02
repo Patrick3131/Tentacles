@@ -22,8 +22,7 @@ extension XCTestCase {
     func evaluateNumberOfEventsReported(
         _ count: Int,
         for reporterStub: AnalyticsReporterStub) {
-            let countAnalyticsEvents = reporterStub.results.filter { ($0 as? RawAnalyticsEvent) != nil }.count
-            XCTAssertEqual(countAnalyticsEvents, count)
+            XCTAssertEqual(reporterStub.eventResults.count, count)
         }
     
     func evaluatePreConditionCeroEventsReported(
