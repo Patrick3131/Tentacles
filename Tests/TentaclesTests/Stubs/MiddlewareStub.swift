@@ -8,11 +8,11 @@
 import Foundation
 import Tentacles
 
-extension Middleware {
-    static let skipTestEvent: Self = Self { event -> RawAnalyticsEvent? in
+extension Middleware where Item == RawAnalyticsEvent {
+    static let skipTestEvent: Self = Self { event -> Action in
         if event.name == "Test" {
-            return nil
+            return .skip
         }
-        return event
+        return .forward(event)
     }
 }

@@ -1,6 +1,6 @@
 
 # Tentacles
-Current State: **Work in Progress**
+Current State: **Work in Progress** Documentation & Tests started but not done yet, Implementation of first version pretty much done
 # What is Tentacles?
 
 Tentacles are body parts that an animal uses to hold, grab or even feel things. That is what Tentacles should be used for in terms of data collection in your application. It should help you to structure analytic events and abstract analytics from specific providers.

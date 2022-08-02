@@ -21,7 +21,7 @@ import Combine
 ///
 /// Discussion about adding additional attributes via status to the tracking event later on in the lifecycle of the Activity:
 /// it doesnt make sense to add them to the activity itself, because then the attributes are also added to later events i.e to completed even if they were only supposed to be used for paused. So if they are going to be added then via the status enum.
-actor ValuePropositionSessionManager {
+class ValuePropositionSessionManager {
     enum Error: Swift.Error {
         case initialActionNeedsToBeOpen
         case prohibitedStateUpdate(session: ValuePropositionSession,
@@ -29,12 +29,14 @@ actor ValuePropositionSessionManager {
         case selfWasNil
     }
     private let _eventPublisher: PassthroughSubject<Result<RawAnalyticsEvent, Swift.Error>, Never> = .init()
-    nonisolated lazy var eventPublisher = _eventPublisher.eraseToAnyPublisher()
+    lazy var eventPublisher = _eventPublisher.eraseToAnyPublisher()
     
     private var sessions = [ValuePropositionSession]()
-    
+    private let lock = NSLock()
+
     func process(for valueProposition: some ValueProposition,
                  with action: ValuePropositionAction) {
+        lock.lock()
             do {
                 let session: ValuePropositionSession
                 if let index = getFirstIndexSimilarValueProposition(as: valueProposition) {
@@ -48,6 +50,7 @@ actor ValuePropositionSessionManager {
             } catch {
                 publish(error)
             }
+        lock.unlock()
     }
     
     private func processActiveSession(for action: ValuePropositionAction,
@@ -130,6 +133,7 @@ actor ValuePropositionSessionManager {
     private var cachedSessions = [ValuePropositionSession]()
 
     func processWillResign() {
+        lock.lock()
         cachedSessions = sessions
         for (index, session) in sessions.enumerated() {
             var newSession = session
@@ -138,9 +142,11 @@ actor ValuePropositionSessionManager {
             publishEvent(for: newSession,
                          with: TentaclesEventTrigger.willResignActive)
         }
+        lock.unlock()
     }
     
     func processDidBecomeActive() {
+        lock.lock()
         var newSessions = cachedSessions
         newSessions.enumerated().forEach { (index, _ ) in
             newSessions[index].reset()
@@ -149,5 +155,6 @@ actor ValuePropositionSessionManager {
         }
         self.sessions = newSessions
         cachedSessions = []
+        lock.unlock()
     }
 }

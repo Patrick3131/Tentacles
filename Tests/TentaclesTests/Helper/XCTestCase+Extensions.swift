@@ -9,12 +9,11 @@ import Tentacles
 import XCTest
 
 extension XCTestCase {
-    func buildTentacles(analyticsReporters: [AnalyticsReporter],
-                        errorReporters: [NonFatalErrorTracking] = [],
-                        commonMiddlewares: [Middleware] = []) -> Tentacles {
+    func buildTentacles(analyticsReporters: [any AnalyticsReporting],
+                        errorReporters: [NonFatalErrorReporting] = [],
+                        commonMiddlewares: [Middleware<RawAnalyticsEvent>] = []) -> Tentacles {
         let tentacles = Tentacles()
         analyticsReporters.forEach { tentacles.register(analyticsReporter: $0) }
-        errorReporters.forEach { tentacles.register(errorReporter: $0) }
         commonMiddlewares.forEach { tentacles.register($0)}
         return tentacles
     }

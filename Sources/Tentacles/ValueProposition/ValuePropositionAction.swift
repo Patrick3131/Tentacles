@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Action to trigger an update of the ValuePropositionActivity
+/// Action to trigger an update of the ValuePropositionSession
 public struct ValuePropositionAction {
     public enum Status {
         case open
@@ -16,7 +16,7 @@ public struct ValuePropositionAction {
         case cancel
         case complete
     }
-    
+    /// Defines the status action that triggers an update of the session of ValuePropositionSession.
     public let status: Status
     public let trigger: AnalyticsEventTrigger
     public let attributes: TentacleAttributes?

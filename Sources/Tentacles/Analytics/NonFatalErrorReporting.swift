@@ -7,6 +7,6 @@
 
 import Foundation
 
-public protocol NonFatalErrorTracking {
-    func track(_ error: Error)
+public protocol NonFatalErrorReporting {
+    func report(_ error: Error)
 }

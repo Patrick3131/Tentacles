@@ -15,10 +15,9 @@ import UIKit
 #endif
 
 public class Tentacles: AnalyticsRegister {
-    private typealias AnalyticsUnit = (reporter: AnalyticsReporter, middlewares: [Middleware])
+    private typealias AnalyticsUnit = (reporter: any AnalyticsReporting, middlewares: [Middleware<RawAnalyticsEvent>])
     private var analyticsUnit = [AnalyticsUnit]()
-    private var errorReporters = [NonFatalErrorTracking]()
-    private var middlewares = [Middleware]()
+    private var middlewares = [Middleware<RawAnalyticsEvent>]()
     private var valuePropositionSessionManager: ValuePropositionSessionManager?
     private var valuePropositionEventsSubscription: AnyCancellable?
     
@@ -36,34 +35,40 @@ public class Tentacles: AnalyticsRegister {
     public init() {}
 #endif
     
-    public func register(_ middleware: Middleware) {
+    public func register(_ middleware: Middleware<RawAnalyticsEvent>) {
         middlewares.append(middleware)
     }
     
-    public func register(analyticsReporter: AnalyticsReporter, middlewares: [Middleware] = []) {
+    public func register(analyticsReporter: any AnalyticsReporting, middlewares: [Middleware<RawAnalyticsEvent>] = []) {
+        analyticsReporter.setup()
         let analyticsUnit: AnalyticsUnit = (reporter: analyticsReporter, middlewares: middlewares)
         self.analyticsUnit.append(analyticsUnit)
     }
     
-    public func register(errorReporter: NonFatalErrorTracking) {
-        errorReporters.append(errorReporter)
-    }
-    
     public func resetRegister() {
         analyticsUnit = []
-        errorReporters = []
         middlewares = []
     }
     
     fileprivate func track(_ event: RawAnalyticsEvent) {
         var newEvent: RawAnalyticsEvent? = event
         middlewares.forEach { middleware in
-            newEvent = middleware.closure(event)
+            switch middleware.closure(event) {
+            case .forward(let event):
+                newEvent = event
+            case .skip:
+                newEvent = nil
+            }
         }
         analyticsUnit.forEach { (reporter, middlewares) in
             middlewares.forEach { middleware in
                 if let unwrappedEvent = newEvent {
-                    newEvent = middleware.closure(unwrappedEvent)
+                    switch middleware.closure(unwrappedEvent) {
+                    case .forward(let event):
+                        newEvent = event
+                    case .skip:
+                        newEvent = nil
+                    }
                 }
             }
             if let newEvent {
@@ -73,20 +78,35 @@ public class Tentacles: AnalyticsRegister {
     }
 }
 
-extension Tentacles: AnalyticsEventTracking {
-    public func track(_ event: any AnalyticsEvent) {
+extension Tentacles: UserIdentifying {
+    public func identify(with id: String) {
+        analyticsUnit.forEach { $0.reporter.identify(with: id)}
+    }
+    
+    public func logout() {
+        analyticsUnit.forEach { $0.reporter.logout() }
+    }
+    
+    public func addUserAttributes(_ attributes: TentacleAttributes) {
+        let attributesValue = attributes.serialiseToValue()
+        analyticsUnit.forEach { $0.reporter.addUserAttributes(attributesValue) }
+    }
+}
+
+extension Tentacles: AnalyticsEventReporting {
+    public func report(_ event: any AnalyticsEvent) {
        track(RawAnalyticsEvent(analyticsEvent: event))
     }
 }
 
-extension Tentacles: NonFatalErrorTracking {
-    public func track(_ error: Error) {
-        errorReporters.forEach { $0.track(error) }
+extension Tentacles: NonFatalErrorReporting {
+    public func report(_ error: Error) {
+        analyticsUnit.forEach { $0.reporter.report(error) }
     }
 }
 
-extension Tentacles: ValuePropositionTracking {
-    public func track(for valueProposition: any ValueProposition, with action: ValuePropositionAction) async {
+extension Tentacles: ValuePropositionReporting {
+    public func report(for valueProposition: any ValueProposition, with action: ValuePropositionAction) {
         if valuePropositionSessionManager == nil,
            valuePropositionEventsSubscription == nil {
             valuePropositionSessionManager = .init()
@@ -97,11 +117,11 @@ extension Tentacles: ValuePropositionTracking {
                     case .success(let event):
                         self?.track(event)
                     case .failure(let error):
-                        self?.track(error)
+                        self?.report(error)
                     }
                 })
         }
-        await valuePropositionSessionManager?.process(for: valueProposition,
+        valuePropositionSessionManager?.process(for: valueProposition,
                                                       with: action)
     }
     
@@ -117,18 +137,12 @@ extension Tentacles: ValuePropositionTracking {
         willResignActiveSubscription = notificationCenter
             .publisher(for: willResignActiveNotification)
             .sink { [weak self] _ in
-                guard let self = self else { return }
-                Task {
-                    await self.valuePropositionSessionManager?.processWillResign()
-                }
+                self?.valuePropositionSessionManager?.processWillResign()
             }
         didBecomeActiveSubscription = notificationCenter
             .publisher(for: didBecomeActiveNotification)
             .sink { [weak self] _ in
-                guard let self = self else { return }
-                Task {
-                    await self.valuePropositionSessionManager?.processDidBecomeActive()
-                }
+                self?.valuePropositionSessionManager?.processDidBecomeActive()
             }
     }
 #endif

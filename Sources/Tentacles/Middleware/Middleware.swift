@@ -7,19 +7,34 @@
 
 import Foundation
 
-public struct Middleware {
-    let closure: (RawAnalyticsEvent) -> RawAnalyticsEvent?
-    public init(_ closure: @escaping (RawAnalyticsEvent) -> RawAnalyticsEvent?) {
+/// Middleware to transform an Item
+///
+/// Middleware where Item == RawAnalyticsEvent can be registered to a specific reporter or be universally used
+/// for all reporters.
+public struct Middleware<Item> {
+    public enum Action {
+        /// Item will be forwarded by the consumer of the Middleware, usually after it has been
+        /// transformed.
+        case forward(Item)
+        /// Item will be skipped by the consumer of the Middleware.
+        case skip
+    }
+    let closure: (Item) -> Action
+    /// Used to transform an Item, usecases range from adding data, editing or ignoring
+    /// the Item.
+    /// - Returns: Action, if the returned value is skip then it will be ignored by the reporting
+    public init(_ closure: @escaping (Item) -> Action) {
         self.closure = closure
     }
 }
 
-public extension Middleware {
-    static let capitalisedAttributeKeys: Self = Self { event -> RawAnalyticsEvent in
+public extension Middleware where Item == RawAnalyticsEvent {
+    /// Middleware to capitalise the keys of all attributes for a RawAnalyticsEvent
+    static let capitalisedAttributeKeys: Self = Self { event -> Action in
         var attributes = AttributesValue()
         event.attributes.forEach {
             attributes[$0.key.capitalized] = $0.value
         }
-        return RawAnalyticsEvent(name: event.name, attributes: attributes)
+        return .forward(RawAnalyticsEvent(name: event.name, attributes: attributes))
     }
 }

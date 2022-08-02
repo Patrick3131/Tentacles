@@ -291,12 +291,8 @@ final class ValuePropositionTests: XCTestCase {
     
     private func trackValueProposition(for valueProposition: some ValueProposition,
                                        with actions: [ValuePropositionAction]) {
-            
-            Task.detached(priority: .userInitiated) { [weak self] in
-                for action in actions {
-
-                await self?.tentacles.track(for: valueProposition, with: action)
-            }
+        for action in actions {
+            tentacles.report(for: valueProposition, with: action)
         }
     }
     

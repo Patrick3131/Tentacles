@@ -9,7 +9,13 @@ import Foundation
 import Tentacles
 import Combine
 
-class AnalyticsReporterStub: AnalyticsReporter {
+class AnalyticsReporterStub: AnalyticsReporting {
+    func identify(with id: String) {}
+    
+    func logout() {}
+    
+    func addUserAttributes(_ attributes: AttributesValue) {}
+    
     /// Used to test sync code
     var results = [Result<RawAnalyticsEvent, Error>]()
     /// Used to test sync code
@@ -42,8 +48,8 @@ class AnalyticsReporterStub: AnalyticsReporter {
     }
 }
 
-extension AnalyticsReporterStub: NonFatalErrorTracking {
-    func track(_ error: Error) {
+extension AnalyticsReporterStub {
+    func report(_ error: Error) {
         results.append(.failure(error))
         _resultPublisher.send(.failure(error))
     }

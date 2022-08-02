@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Event reported to AnalyticsReporter
 public struct RawAnalyticsEvent {
     /// The name of the event being reported.
     public let name: String

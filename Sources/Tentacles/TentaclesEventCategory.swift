@@ -12,6 +12,7 @@ public enum TentaclesEventCategory: String, AnalyticsEventCategory {
     case navigation
     case interaction
     case valueProposition
+    case screen
     
     public var name: String {
         self.rawValue
