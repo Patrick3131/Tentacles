@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct AnalyticsScreenEvent<Attributes: TentacleAttributes>: AnalyticsEventTrigger {
+struct AnalyticsScreenEvent<Attributes: TentacleAttributes>: AnalyticsEvent {
     let category: AnalyticsEventCategory = TentaclesEventCategory.screen
     let trigger: AnalyticsEventTrigger = TentaclesEventTrigger.screenDidAppear
     let name: String
