@@ -8,5 +8,5 @@
 import Foundation
 
 public protocol NonFatalErrorReporting {
-    func report(_ error: Error, logLevel: , filename: String, line: Int)
+    func report(_ error: Error, filename: String, line: Int)
 }
