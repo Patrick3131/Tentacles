@@ -15,8 +15,13 @@ struct ValuePropositionSession {
         case canceled
         case completed
     }
-    private var uuid = UUID()
-    var status: Status
+    private(set) var identifier = SessionIdentifier()
+    var status: Status {
+        didSet {
+            timestamps[status] = Date.timeIntervalSinceReferenceDate
+        }
+    }
+    private var timestamps = [Status: Double]()
     let valueProposition: any ValueProposition
     
     /// When first created the status is set to opened.
@@ -27,7 +32,7 @@ struct ValuePropositionSession {
     
     /// sets UUID to a new UUID, this is used if a new session with the same property values is needed
     mutating func reset() {
-        uuid = UUID()
+        identifier.reset()
     }
     
     func createRawAnalyticsEvent(action: ValuePropositionAction) -> RawAnalyticsEvent {
@@ -56,10 +61,13 @@ struct ValuePropositionSession {
     private func buildDefaultAttributes(
         trigger: AnalyticsEventTrigger) -> AttributesValue {
             var attributes = AttributesValue()
-            attributes["uuid"] = uuid.uuidString
-            attributes["status"] = status.rawValue
-            attributes["trigger"] = trigger.name
-            attributes["category"] = TentaclesEventCategory.valueProposition.name
+            for timestamp in timestamps {
+                attributes[timestamp.key.rawValue+"At"] = timestamp.value
+            }
+            attributes[KeyAttributes.valuePropositionSessionUUID] = identifier.id.uuidString
+            attributes[KeyAttributes.status] = status.rawValue
+            attributes[KeyAttributes.trigger] = trigger.name
+            attributes[KeyAttributes.category] = TentaclesEventCategory.valueProposition.name
             attributes = combine(attributes, with: valueProposition.attributes)
             return attributes
         }

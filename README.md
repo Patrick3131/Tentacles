@@ -1,6 +1,6 @@
 
 # Tentacles
-Current State: **Work in Progress** Documentation & Tests started but not done yet, Implementation of first version pretty much done
+Current State: ****Work in Progress**** Documentation & Tests started but not done yet, Implementation of first version pretty much done
 # What is Tentacles?
 
 Tentacles are body parts that an animal uses to hold, grab or even feel things. That is what Tentacles should be used for in terms of data collection in your application. It should help you to structure analytic events and abstract analytics from specific providers.
@@ -22,9 +22,14 @@ Using
 ## Analytics setup
 
  
-## Value Proposition Activities
+## Domain driven analytics
 
-[Value proposition](https://en.wikipedia.org/wiki/Value_proposition) is a term borrowed out of marketing and describes the reason why a customer would choose your product. Applying it to an application, it is the reason why a user would choose to use your app. As data related to the value proposition is especially important, tentacles offers a way to connect events that are related to the same value proposition activity session. A session (identified by UUID) is a period devoted to a particular value proposition activity. The UUID identifying the session is automatically added and managed. This brings the advantage of further analysing possibilities of our analytic data, as we can derive connections between the events.
+When developing an app it is important to understand its domain. Yes we want to track if a user logs in or clicks on a specific button but what we are particular interested is how are users interacting with our core functionalities, the functionalities that should bring the most value to our users. 
+
+[Value proposition](https://en.wikipedia.org/wiki/Value_proposition) is a term borrowed out of marketing and describes the reason why a customer would choose your product. Applying it to an application, it is the reason why a user would choose to use your app. As data related to the value proposition is especially important, tentacles offers a way to connect events that are related to the same value proposition session. 
+
+A session (identified by UUID) is a period devoted to a particular value proposition activity. The UUID identifying the session is automatically added and managed. This brings the advantage of further analysing possibilities of our analytic data, as we can derive connections between the events. As Tentacles tracks every status change of a ValueProposition with a timestamp it is easily possible to calculate the duration between i.e. when the value proposition started and completed. 
+ 
 
 Lets use Youtube as an example, lets simplify and say their value proposition is offering engaging content in particular videos.
 To measure this, watching videos is analysed. The user experience of watching a video usually involves these steps:
@@ -53,7 +58,7 @@ If a prohibited status update occurs a non fatal error event is forwarded and th
 
 - What happens if the app goes in to background(-> all sessions are completed)
 
-- What happens if the app comes back in to foreground( -> new sessions are created and set to previous state)
+- What happens if the app comes back in to foreground( -> new sessions are created and set to open)
 - More than one session of the same value proposition?
 
 ```
@@ -99,8 +104,15 @@ let completionAttributes = WatchingVideoCompletionAttributes(
 tracker.track(for: watchingVideo, with:.complete(trigger: .automatically,attributes: completionAttributes))
 ```
 
-## Future Enhancements:
+## Default attributes
+Attributes added to every event by default:
 
- - Event Middleware to process events for specific analytic providers
- - Adding implementations for specific providers like Firebase, Mixpanel ... 
- - UserAttributesTracking
+- sessionId - A generated random uuid, to let you search events from the same session.
+
+Attributes added to ValueProposition events:
+
+- trigger, activity triggering the event, specified by the app
+- category - value: **valueProposition**
+- status - status of the value proposition session, possible values: **opened, started, paused, canceled, completed**
+- valuePropositionSessionId - A generated random uuid, to let you search events from the same value proposition session.
+- with every status update of a session a timestamp of the update is logged: i.e. open: 123456.00, start: 1234567.00, completed: 1234354.00, if an update occurs more than once a count is added as suffix the key: i.e. start_1, start_2

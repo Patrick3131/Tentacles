@@ -21,6 +21,8 @@ public class Tentacles: AnalyticsRegister {
     private var valuePropositionSessionManager: ValuePropositionSessionManager?
     private var valuePropositionEventsSubscription: AnyCancellable?
     
+    private var identifier = SessionIdentifier()
+    
 #if canImport(UIKit) || canImport(AppKit)
     private var willResignActiveSubscription: AnyCancellable?
     private var didBecomeActiveSubscription: AnyCancellable?
@@ -52,6 +54,7 @@ public class Tentacles: AnalyticsRegister {
     
     fileprivate func track(_ event: RawAnalyticsEvent) {
         var newEvent: RawAnalyticsEvent? = event
+        newEvent?.attributes[KeyAttributes.sessionId] = identifier.id.uuidString
         middlewares.forEach { middleware in
             switch middleware.closure(event) {
             case .forward(let event):
@@ -142,6 +145,7 @@ extension Tentacles: ValuePropositionReporting {
         didBecomeActiveSubscription = notificationCenter
             .publisher(for: didBecomeActiveNotification)
             .sink { [weak self] _ in
+                self?.identifier.reset()
                 self?.valuePropositionSessionManager?.processDidBecomeActive()
             }
     }

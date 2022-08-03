@@ -10,7 +10,7 @@ import os
 
 struct TentaclesLogger: AnalyticsReporting {
     func report(_ error: Error, filename: String, line: Int) {
-        logger.critical("\(error.localizedDescription)")
+        logger.error("\(error.localizedDescription)")
     }
     
     private var logger = Logger()

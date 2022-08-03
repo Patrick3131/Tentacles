@@ -10,7 +10,7 @@ import Foundation
 /// Abstraction to implement a specific analytics reporter, this could be the apps backend,
 /// a third party service like Firebase or a local logger
 ///
-///Example for Logger implementation:
+///Example for AnalyticsReporting implementation for a Logger:
 /// ````
 ///struct TentaclesLogger: AnalyticsReporting {
 ///    private var logger = Logger()
@@ -35,8 +35,8 @@ import Foundation
 ///        logger.log("Analytics event: \(event.name), with attributes: \(event.attributes)")
 ///    }
 ///
-///    func report(_ error: Error) {
-///        logger.critical("\(error.localizedDescription)")
+///    func report(_ error: Error, filename: String, line: Int) {
+///        logger.error("\(error.localizedDescription)")
 ///    }
 ///}
 /// ````
