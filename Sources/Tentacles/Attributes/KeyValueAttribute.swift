@@ -7,7 +7,8 @@
 
 import Foundation
 
-public struct KeyValueAttribute<Value: Encodable>: TentacleAttributes {
+/// Used if attributes do only consist of a single value.
+public struct KeyValueAttribute<Value: Encodable>: TentaclesAttributes {
     let key: String
     let value: Value
     public init(key: String, value: Value) {

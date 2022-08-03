@@ -7,8 +7,9 @@
 
 import Foundation
 
-/// Action to trigger an update of the ValuePropositionSession
+/// Action to trigger an update of the ``ValuePropositionSession``.
 public struct ValuePropositionAction {
+    /// Possible status updates for ``ValuePropositionSession``.
     public enum Status {
         case open
         case start
@@ -16,14 +17,15 @@ public struct ValuePropositionAction {
         case cancel
         case complete
     }
-    /// Defines the status action that triggers an update of the session of ValuePropositionSession.
+    /// Defines the status action that triggers an status update of ``ValuePropositionSession``.
     public let status: Status
     public let trigger: AnalyticsEventTrigger
-    public let attributes: TentacleAttributes?
+    /// Attributes related to a specific status update of ``ValueProposition`` and not the the ``ValueProposition` itself
+    public let attributes: TentaclesAttributes?
     
     public init(status: Status,
                 trigger: AnalyticsEventTrigger,
-                attributes: TentacleAttributes? = nil) {
+                attributes: TentaclesAttributes? = nil) {
         self.status = status
         self.trigger = trigger
         self.attributes = attributes
@@ -32,35 +34,35 @@ public struct ValuePropositionAction {
 
 public extension ValuePropositionAction {
     static func open(trigger: AnalyticsEventTrigger = TentaclesEventTrigger.clicked,
-                     attributes: TentacleAttributes? = nil) -> Self {
+                     attributes: TentaclesAttributes? = nil) -> Self {
         Self.init(status: .open,
                   trigger: trigger,
                   attributes: attributes)
     }
     
     static func start(trigger: AnalyticsEventTrigger = TentaclesEventTrigger.clicked,
-                      attributes: TentacleAttributes? = nil) -> Self {
+                      attributes: TentaclesAttributes? = nil) -> Self {
         Self.init(status: .start,
                   trigger: trigger,
                   attributes: attributes)
     }
     
     static func pause(trigger: AnalyticsEventTrigger = TentaclesEventTrigger.clicked,
-                      attributes: TentacleAttributes? = nil) -> Self {
+                      attributes: TentaclesAttributes? = nil) -> Self {
         Self.init(status: .pause,
                   trigger: trigger,
                   attributes: attributes)
     }
     
     static func complete(trigger: AnalyticsEventTrigger = TentaclesEventTrigger.clicked,
-                         attributes: TentacleAttributes? = nil) -> Self {
+                         attributes: TentaclesAttributes? = nil) -> Self {
         Self.init(status: .complete,
                   trigger: trigger,
                   attributes: attributes)
     }
     
     static func cancel(trigger: AnalyticsEventTrigger = TentaclesEventTrigger.clicked,
-                       attributes: TentacleAttributes? = nil) -> Self {
+                       attributes: TentaclesAttributes? = nil) -> Self {
         Self.init(status: .cancel,
                   trigger: trigger,
                   attributes: attributes)

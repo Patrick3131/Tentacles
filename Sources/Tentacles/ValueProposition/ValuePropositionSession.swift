@@ -8,6 +8,7 @@
 import Foundation
 
 struct ValuePropositionSession {
+    /// Possible status
     enum Status: String, Encodable {
         case opened
         case started
@@ -15,14 +16,23 @@ struct ValuePropositionSession {
         case canceled
         case completed
     }
+    
+    private var statusTimestamps = [Status: [Double]]()
     private(set) var identifier = SessionIdentifier()
+    let valueProposition: any ValueProposition
+
     var status: Status {
         didSet {
-            timestamps[status] = Date.timeIntervalSinceReferenceDate
+            let timestamp = Date.timeIntervalSinceReferenceDate
+            if var timestamps = statusTimestamps[status] {
+                timestamps.append(timestamp)
+                statusTimestamps[status] = timestamps
+            } else {
+                statusTimestamps[status] = [timestamp]
+            }
         }
     }
-    private var timestamps = [Status: Double]()
-    let valueProposition: any ValueProposition
+    
     
     /// When first created the status is set to opened.
     init(valueProposition: any ValueProposition) {
@@ -33,6 +43,7 @@ struct ValuePropositionSession {
     /// sets UUID to a new UUID, this is used if a new session with the same property values is needed
     mutating func reset() {
         identifier.reset()
+        statusTimestamps = [:]
     }
     
     func createRawAnalyticsEvent(action: ValuePropositionAction) -> RawAnalyticsEvent {
@@ -48,7 +59,7 @@ struct ValuePropositionSession {
     }
     
     private func combine(_ attributes: AttributesValue,
-                         with tentacleAttributes: (any TentacleAttributes)?) -> AttributesValue {
+                         with tentacleAttributes: (any TentaclesAttributes)?) -> AttributesValue {
         var newAttributes = attributes
         if let tentacleAttributes {
             for (key, value) in tentacleAttributes.serialiseToValue() {
@@ -58,12 +69,25 @@ struct ValuePropositionSession {
         return newAttributes
     }
     
+    private func buildTimestampAttributes(_ attributes: AttributesValue) -> AttributesValue {
+        var newAttributes = attributes
+        for timestamp in statusTimestamps {
+                for (index, value) in timestamp.value.enumerated() {
+                    if index == 0 {
+                        newAttributes[timestamp.key.rawValue] = value
+                    } else {
+                        newAttributes[timestamp.key.rawValue + "_" + "\(index)"] = value
+                    }
+            }
+        }
+        return newAttributes
+    }
+    
     private func buildDefaultAttributes(
         trigger: AnalyticsEventTrigger) -> AttributesValue {
             var attributes = AttributesValue()
-            for timestamp in timestamps {
-                attributes[timestamp.key.rawValue+"At"] = timestamp.value
-            }
+            let timestampAttributes = buildTimestampAttributes(attributes)
+            attributes.merge(timestampAttributes) { _, new in new }
             attributes[KeyAttributes.valuePropositionSessionUUID] = identifier.id.uuidString
             attributes[KeyAttributes.status] = status.rawValue
             attributes[KeyAttributes.trigger] = trigger.name

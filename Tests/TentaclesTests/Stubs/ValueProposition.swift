@@ -22,7 +22,7 @@ struct WatchingVideoValueProposition: ValueProposition {
 }
 
 extension WatchingVideoValueProposition {
-    struct Attributes: TentacleAttributes {
+    struct Attributes: TentaclesAttributes {
         let videoName: String
         let language: String
         /// in seconds
@@ -30,7 +30,7 @@ extension WatchingVideoValueProposition {
     }
 }
 
-struct WatchingVideoCompletionAttributes: TentacleAttributes {
+struct WatchingVideoCompletionAttributes: TentaclesAttributes {
     let secondsSkipped: Double
     let userCommented: Bool
 }

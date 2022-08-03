@@ -54,7 +54,7 @@ public class Tentacles: AnalyticsRegister {
     
     fileprivate func track(_ event: RawAnalyticsEvent) {
         var newEvent: RawAnalyticsEvent? = event
-        newEvent?.attributes[KeyAttributes.sessionId] = identifier.id.uuidString
+        newEvent?.attributes[KeyAttributes.sessionUUID] = identifier.id.uuidString
         middlewares.forEach { middleware in
             switch middleware.closure(event) {
             case .forward(let event):
@@ -90,7 +90,7 @@ extension Tentacles: UserIdentifying {
         analyticsUnit.forEach { $0.reporter.logout() }
     }
     
-    public func addUserAttributes(_ attributes: TentacleAttributes) {
+    public func addUserAttributes(_ attributes: TentaclesAttributes) {
         let attributesValue = attributes.serialiseToValue()
         analyticsUnit.forEach { $0.reporter.addUserAttributes(attributesValue) }
     }
@@ -104,7 +104,8 @@ extension Tentacles: AnalyticsEventReporting {
 
 extension Tentacles: NonFatalErrorReporting {
     public func report(_ error: Error, filename: String = #file, line: Int = #line) {
-        analyticsUnit.forEach { $0.reporter.report(error, filename: filename, line: line) }
+        analyticsUnit.forEach { $0.reporter.report(
+            error, filename: filename, line: line) }
     }
 }
 

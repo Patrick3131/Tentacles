@@ -132,6 +132,8 @@ class ValuePropositionSessionManager {
     /// app enters foreground again.
     private var cachedSessions = [ValuePropositionSession]()
 
+    /// When the app will resign, all active sessions are canceled and cached in memory in case
+    /// the app enters foreground again.
     func processWillResign() {
         lock.lock()
         cachedSessions = sessions
@@ -145,11 +147,17 @@ class ValuePropositionSessionManager {
         lock.unlock()
     }
     
+    /// After app did become active again, all previous active sessions are reset and updated with a new identifier.
+    /// For all previous active sessions an open event is sent and then reset to the previous status.
     func processDidBecomeActive() {
         lock.lock()
         var newSessions = cachedSessions
         newSessions.enumerated().forEach { (index, _ ) in
             newSessions[index].reset()
+            newSessions[index].status = .opened
+            publishEvent(for: newSessions[index],
+                         with: TentaclesEventTrigger.didEnterForeground)
+            newSessions[index].status = cachedSessions[index].status
             publishEvent(for: newSessions[index],
                          with: TentaclesEventTrigger.didEnterForeground)
         }

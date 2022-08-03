@@ -161,8 +161,7 @@ final class ValuePropositionTests: XCTestCase {
             let expectation = expectation(description: "numberOfExpectedResults")
             resultsSubscription = reporterStub.resultPublisher.sink { result in
                 results.append(result)
-                print(result)
-                if results.count == 4 {
+                if results.count == 5 {
                     expectation.fulfill()
                 }
             }
@@ -172,12 +171,15 @@ final class ValuePropositionTests: XCTestCase {
             Thread.sleep(forTimeInterval: TimeInterval.random(in: 0...0.010))
             NotificationCenter.default.post(name: didBecomeActivePostNotification, object: nil)
             wait(for: [expectation], timeout: 3)
-            let events = evaluateResults(results, with: Array(repeating: .success, count: 4))
+            let events = evaluateResults(results, with: Array(repeating: .success, count: 5))
             evaluate(event: events[0], for: .opened, trigger: .clicked)
             evaluate(event: events[1], for: .started, trigger: .clicked)
             evaluate(event: events[2], for: .canceled, trigger: .willResignActive)
-            evaluate(event: events[3], for: .started, trigger: .didEnterForeground)
+            evaluate(event: events[3], for: .opened, trigger: .didEnterForeground)
+            evaluate(event: events[4], for: .started, trigger: .didEnterForeground)
 
+            /// Check for timestamps
+            XCTAssertTrue(false)
 
             func evaluate(event: RawAnalyticsEvent, for status: EventStatus, trigger: TentaclesEventTrigger) {
                 self.evaluate(event: event, for: status, trigger: trigger, name: watchingVideovalueProposition.name,
@@ -191,6 +193,10 @@ final class ValuePropositionTests: XCTestCase {
         let results = testWatchVideoValueProposition(for: [.open(), .start()],
                                                      with: [.success,.success])
         XCTAssertTrue(isSessionSimilar(at: 0, and: 1, results: results))
+    }
+    
+    func testStatusTimestamps() throws {
+        XCTAssertTrue(false)
     }
     
     func testDifferentValuePropositions() throws {
@@ -335,7 +341,8 @@ final class ValuePropositionTests: XCTestCase {
                                   lhs: Swift.Result<RawAnalyticsEvent, Error>) -> Bool {
         switch (rhs, lhs) {
         case (.success(let event), .success(let otherEvent)):
-            return event.attributes["uuid"] == otherEvent.attributes["uuid"]
+            return event.attributes[KeyAttributes.valuePropositionSessionUUID]
+            == otherEvent.attributes[KeyAttributes.valuePropositionSessionUUID]
         default:
             return false
         }
@@ -351,11 +358,15 @@ final class ValuePropositionTests: XCTestCase {
                           name: String,
                           videoName: String,
                           language: String) {
+        print(event.attributes)
         XCTAssertEqual(event.name, name)
         XCTAssertEqual(event.attributes["videoName"] as? String, videoName)
         XCTAssertEqual(event.attributes["language"] as? String, language)
-        XCTAssertEqual(event.attributes["category"] as? String, TentaclesEventCategory.valueProposition.name)
-        XCTAssertEqual(event.attributes["trigger"] as? String, trigger.rawValue)
-        XCTAssertEqual(event.attributes["status"] as? String, status.rawValue)
+        XCTAssertEqual(event.attributes[KeyAttributes.category]
+                       as? String, TentaclesEventCategory.valueProposition.name)
+        XCTAssertEqual(event.attributes[KeyAttributes.trigger]
+                       as? String, trigger.rawValue)
+        XCTAssertEqual(event.attributes[KeyAttributes.status]
+                       as? String, status.rawValue)
     }
 }

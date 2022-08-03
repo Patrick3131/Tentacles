@@ -79,4 +79,16 @@ final class MiddlewareTests: XCTestCase {
         }
         evaluateNumberOfEventsReported(1, for: reporter)
     }
+    
+    func testValuePropositionDurationStartedToCompleted() throws {
+        XCTAssertTrue(false)
+    }
+    
+    func testValuePropositionDurationStartedToCanceled() throws {
+        XCTAssertTrue(false)
+    }
+    
+    func testSpecificMiddlewareForASpecificProvider() throws {
+        XCTAssertTrue(false)
+    }
 }

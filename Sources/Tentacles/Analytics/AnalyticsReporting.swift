@@ -41,9 +41,9 @@ import Foundation
 ///}
 /// ````
 public protocol AnalyticsReporting: UserIdentifying, NonFatalErrorReporting {
-    /// Used to set up i.e. the underlying third party service
+    /// Used to set up i.e. the underlying third party service.
     ///
-    /// Setup is called when the reporter is registered to the register.
+    /// Setup is called when the reporter is registered to ``AnalyticsRegister``.
     func setup()
     func report(event: RawAnalyticsEvent)
     func addUserAttributes(_ attributes: AttributesValue)
