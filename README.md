@@ -1,7 +1,7 @@
 
 # 🐙Tentacles
 Current State: ****Work in Progress**** Documentation & Tests started but not done yet, Implementation of first version pretty much done
-# Welcome to Tentacles?
+# Welcome to Tentacles
 
 Tentacles are body parts that an animal uses to hold, grab or even feel things. That is what Tentacles is used for in terms of data collection in your application. It helps you to abstract analytics from specific providers, to structure your analytic events in a typesafe way and to collect meaning full domain-driven data with ValueProposition.
 
@@ -14,7 +14,7 @@ For further information why abstracting a third party library make sense [Benoit
     - Adding user attributes
 - Typesafety for events and no manual data converting between event layers
 - Domain-driven analytics with ValueProposition
-- Middleware to transform/ignore events for specific reporter
+- Middleware to transform/ignore events for reporters
 
 
 
@@ -129,6 +129,8 @@ Multiple sessions with different ValuePropositions can be managed. However only 
 
 ### Background & Foreground Applifecycle
 When the app **will resign**, all active value proposition sessions are canceled and cached in memory in case the app enters foreground again. After app **did become active** again, all previous active sessions are reset and updated with a new identifier. For all previous active sessions an open event is sent and then reset to the previous status.
+
+### Defining & Tracking Value Propositions 
 
 ```swift
 struct WatchingVideo: ValueProposition {
