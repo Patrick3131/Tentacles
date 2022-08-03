@@ -9,6 +9,10 @@ import Foundation
 import os
 
 struct TentaclesLogger: AnalyticsReporting {
+    func report(_ error: Error, filename: String, line: Int) {
+        logger.critical("\(error.localizedDescription)")
+    }
+    
     private var logger = Logger()
     
     func identify(with id: String) {
@@ -29,9 +33,5 @@ struct TentaclesLogger: AnalyticsReporting {
     
     func report(event: RawAnalyticsEvent) {
         logger.log("Analytics event: \(event.name), with attributes: \(event.attributes)")
-    }
-    
-    func report(_ error: Error) {
-        logger.critical("\(error.localizedDescription)")
     }
 }

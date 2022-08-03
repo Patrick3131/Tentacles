@@ -10,6 +10,11 @@ import Tentacles
 import Combine
 
 class AnalyticsReporterStub: AnalyticsReporting {
+    func report(_ error: Error, filename: String, line: Int) {
+        results.append(.failure(error))
+        _resultPublisher.send(.failure(error))
+    }
+    
     func identify(with id: String) {}
     
     func logout() {}
@@ -45,13 +50,6 @@ class AnalyticsReporterStub: AnalyticsReporting {
     func report(event: RawAnalyticsEvent) {
         results.append(.success(event))
         _resultPublisher.send(.success(event))
-    }
-}
-
-extension AnalyticsReporterStub {
-    func report(_ error: Error) {
-        results.append(.failure(error))
-        _resultPublisher.send(.failure(error))
     }
 }
 

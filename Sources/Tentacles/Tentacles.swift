@@ -100,8 +100,8 @@ extension Tentacles: AnalyticsEventReporting {
 }
 
 extension Tentacles: NonFatalErrorReporting {
-    public func report(_ error: Error) {
-        analyticsUnit.forEach { $0.reporter.report(error) }
+    public func report(_ error: Error, filename: String = #file, line: Int = #line) {
+        analyticsUnit.forEach { $0.reporter.report(error, filename: filename, line: line) }
     }
 }
 
