@@ -96,8 +96,8 @@ extension Tentacles: UserIdentifying {
     }
 }
 
-extension Tentacles: AnalyticsEventReporting {
-    public func report(_ event: any AnalyticsEvent) {
+extension Tentacles: AnalyticsEventTracking {
+    public func track(_ event: any AnalyticsEvent) {
        track(RawAnalyticsEvent(analyticsEvent: event))
     }
 }
@@ -109,8 +109,8 @@ extension Tentacles: NonFatalErrorReporting {
     }
 }
 
-extension Tentacles: ValuePropositionReporting {
-    public func report(for valueProposition: any ValueProposition, with action: ValuePropositionAction) {
+extension Tentacles: ValuePropositionTracking {
+    public func track(for valueProposition: any ValueProposition, with action: ValuePropositionAction) {
         if valuePropositionSessionManager == nil,
            valuePropositionEventsSubscription == nil {
             valuePropositionSessionManager = .init()

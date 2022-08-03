@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol ValuePropositionReporting {
-    func report(for valueProposition: any ValueProposition,
+public protocol ValuePropositionTracking {
+    func track(for valueProposition: any ValueProposition,
                 with action: ValuePropositionAction)
 }

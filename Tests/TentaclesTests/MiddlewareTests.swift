@@ -30,7 +30,7 @@ final class MiddlewareTests: XCTestCase {
         evaluatePreConditionCeroEventsReported(reporterStub: otherReporter)
         
         tentacles.register(analyticsReporter: otherReporter, middlewares: [.capitalisedAttributeKeys])
-        tentacles.report(AnalyticsEventStub())
+        tentacles.track(AnalyticsEventStub())
         if let event = reporter.isResultEvent(index: 0) {
             XCTAssertNotEqual(event.attributes["Category"],
                            TentaclesEventCategory.interaction.rawValue)
@@ -54,7 +54,7 @@ final class MiddlewareTests: XCTestCase {
     func testCapitalisedAttributeKeys() throws {
         evaluatePreConditionCeroEventsReported(reporterStub: reporter)
         tentacles.register(.capitalisedAttributeKeys)
-        tentacles.report(AnalyticsEventStub())
+        tentacles.track(AnalyticsEventStub())
         if let event = reporter.isResultEvent(index: 0) {
             XCTAssertEqual(event.attributes["Category"],
                            TentaclesEventCategory.interaction.rawValue)
@@ -69,11 +69,11 @@ final class MiddlewareTests: XCTestCase {
     func testSkipSpecificEvent() throws {
         evaluatePreConditionCeroEventsReported(reporterStub: reporter)
         tentacles.register(.skipTestEvent)
-        tentacles.report(AnalyticsEventStub())
-        tentacles.report(AnalyticsEventStub(
+        tentacles.track(AnalyticsEventStub())
+        tentacles.track(AnalyticsEventStub(
             category: TentaclesEventCategory.interaction,
             trigger: TentaclesEventTrigger.clicked,
-            name: "Test2"))
+            name: "Test2", otherAttributes: .init(key: "Key", value: 123)))
         if let event = reporter.isResultEvent(index: 0) {
             XCTAssertEqual(event.name, "Test2")
         }

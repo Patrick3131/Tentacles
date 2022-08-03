@@ -17,7 +17,7 @@ struct AnalyticsEventStub: AnalyticsEvent {
     
     var name: String
     
-    var otherAttributes: Attributes?
+    var otherAttributes: Attributes
 }
 
 extension AnalyticsEventStub {

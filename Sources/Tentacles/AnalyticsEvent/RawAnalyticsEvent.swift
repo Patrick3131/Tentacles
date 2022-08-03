@@ -21,11 +21,9 @@ extension RawAnalyticsEvent {
         var attributes = AttributesValue()
         attributes[KeyAttributes.trigger] = analyticsEvent.trigger.name
         attributes[KeyAttributes.category] = analyticsEvent.category.name
-        let otherAttributeValues = analyticsEvent.otherAttributes?.serialiseToValue()
-        if let otherAttributeValues {
-            for (key, value) in otherAttributeValues {
-                attributes[key] = value
-            }
+        let otherAttributeValues = analyticsEvent.otherAttributes.serialiseToValue()
+        for (key, value) in otherAttributeValues {
+            attributes[key] = value
         }
         self.attributes = attributes
     }

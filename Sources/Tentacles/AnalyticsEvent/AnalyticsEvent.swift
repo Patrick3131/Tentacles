@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Event that can be tracked by ``AnalyticsEventReporting``.
+/// Event that can be tracked by ``AnalyticsEventTracking``.
 public protocol AnalyticsEvent {
     associatedtype Attributes: TentaclesAttributes
     /// Used to categorise ``AnalyticsEvent``, this could be i.e. a life cycle event or an
@@ -28,5 +28,5 @@ public protocol AnalyticsEvent {
     /// The name of the event being reported
     var name: String { get }
     /// Additional attributes that are valuable for the event.
-    var otherAttributes: Attributes? { get }
+    var otherAttributes: Attributes { get }
 }

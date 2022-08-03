@@ -298,7 +298,7 @@ final class ValuePropositionTests: XCTestCase {
     private func trackValueProposition(for valueProposition: some ValueProposition,
                                        with actions: [ValuePropositionAction]) {
         for action in actions {
-            tentacles.report(for: valueProposition, with: action)
+            tentacles.track(for: valueProposition, with: action)
         }
     }
     

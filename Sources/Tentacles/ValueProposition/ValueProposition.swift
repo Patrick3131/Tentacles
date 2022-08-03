@@ -11,7 +11,7 @@ import Foundation
 /// It describes the core functionalities the user interacts with while using the app.
 ///
 /// It is assumed that the user devotes a session to a particular ValueProposition,
-/// therefore when a  new ValueProposition is tracked by ``ValuePropositionReporting``
+/// therefore when a  new ValueProposition is tracked by ``ValuePropositionTracking``
 /// a new session is created.
 public protocol ValueProposition {
     associatedtype Attributes: TentaclesAttributes

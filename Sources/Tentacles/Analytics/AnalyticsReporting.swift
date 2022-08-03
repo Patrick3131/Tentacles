@@ -31,11 +31,11 @@ import Foundation
 ///        logger.info("Tentacles logger set up")
 ///    }
 ///
-///    func report(event: RawAnalyticsEvent) {
+///    func track(event: RawAnalyticsEvent) {
 ///        logger.log("Analytics event: \(event.name), with attributes: \(event.attributes)")
 ///    }
 ///
-///    func report(_ error: Error, filename: String, line: Int) {
+///    func track(_ error: Error, filename: String, line: Int) {
 ///        logger.error("\(error.localizedDescription)")
 ///    }
 ///}
