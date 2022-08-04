@@ -12,10 +12,12 @@ import Foundation
 struct RawValueProposition {
     let name: String
     let attributes: TentaclesAttributes
+    
     init(valueProposition: ValueProposition<some TentaclesAttributes>) {
         self.name = valueProposition.name
         self.attributes = valueProposition.attributes
     }
+    
     func isEqual(to other: RawValueProposition) -> Bool {
         (self.name == other.name)
         && (self.attributes.serialiseToValue() == other.attributes.serialiseToValue())

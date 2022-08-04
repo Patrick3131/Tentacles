@@ -117,11 +117,12 @@ These steps are the possible status of a session related to a value proposition 
 ```mermaid
 graph LR
 A(Open) --> B(Start)
-A --> E
-B --> C(Pause)
-C --> B
-B --> D(Complete)
-B --> E(Cancel)
+A(Open) --> E(Cancel)
+B(Start) --> C(Pause)
+B(Start) --> D(Complete)
+B(Start) --> E(Cancel)
+C(Pause) --> B(Start)
+
 ```
 If a prohibited status update occurs a non fatal error event is forwarded and the status is **not** updated. In cases where attributes are specific to a value proposition status they can be added to the action. I.e. if a pause event needs the pausing point of the video, these attributes are then mapped to the analytics events. With reaching completed or canceled the session ends and it gets deallocated. 
 

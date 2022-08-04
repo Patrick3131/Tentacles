@@ -38,7 +38,7 @@ struct ValuePropositionSession {
         self.status = .opened
     }
     
-    /// sets UUID to a new UUID, this is used if a new session with the same property values is needed
+    /// Sets UUID to a new UUID, and removes all timestamps for previous status changes.
     mutating func reset() {
         identifier.reset()
         statusTimestamps = [:]

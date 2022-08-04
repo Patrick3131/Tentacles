@@ -10,6 +10,19 @@ import Foundation
 /// Action to trigger an update of the ``ValuePropositionSession``.
 public struct ValuePropositionAction {
     /// Possible status updates for ``ValuePropositionSession``.
+    ///
+    /// Status changes that are allowed:
+    ///
+    ///```mermaid
+    /// Open --> Start
+    /// Open --> Cancel
+    /// Start --> Pause
+    /// Start --> Complete
+    /// Start --> Cancel
+    /// Pause --> Start
+    /// Pause --> Cancel
+    ///```
+    /// If a prohibited status update occurs a non fatal error event is forwarded and the status is **not** updated.
     public enum Status {
         case open
         case start
