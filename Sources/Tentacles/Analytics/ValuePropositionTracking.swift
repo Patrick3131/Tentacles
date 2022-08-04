@@ -9,5 +9,5 @@ import Foundation
 
 public protocol ValuePropositionTracking {
     func track(_ valueProposition: ValueProposition<some TentaclesAttributes>,
-                with action: ValuePropositionAction)
+               with action: ValuePropositionAction)
 }

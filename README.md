@@ -61,10 +61,10 @@ tentacles.register(analyticsReporter: firebaseReporter, middlewares: [.ignoreLif
 ```
 
 ## Defining Events & Using Analytics
-Creating analytic events is easy and type safe.
+Creating analytic events and attributes is easy and type safe.
+Defining Attributes:
 ```swift
-struct UserSharedContent: AnalyticsEvent {
-    struct Attributes: TentaclesAttributes {
+struct UserContentSharingAttributes: TentaclesAttributes {
         enum Content: Encodable {
             case video
             case picture
@@ -74,16 +74,48 @@ struct UserSharedContent: AnalyticsEvent {
         let likedContent: Bool
         let commentedOnContent: Bool
     }
-    var  category: AnalyticsEventCategory = TentaclesEventCategory.interaction
-    var  trigger: AnalyticsEventTrigger = TentaclesEventTrigger.clicked
-    var name: String = "userSharedContent"
-    var otherAttributes: Attributes
 }
-let userSharedContentEvent = UserSharedContent(otherAttributes: .init(content: .video, likedContent: true, commentedOnContent: false))
+```
+Adding your own custom AnalyticsEventCategory :
+```swift
+enum MyAppAnalyticsEventCategory:String, AnalyticsEventCategory {
+    case social
+    var name: String {
+        self.rawValue
+    }
+}
+``` 
+Defining AnalyticsEvent:
+```swift
+
+```
+```swift
+typealias UserContentSharing = AnalyticsEvent<UserContentSharingAttributes>
+extension UserContentSharing {
+    init(name: String = "userContentSharing",
+         category: AnalyticsEventCategory = MyAppAnalyticsEventCategory.social,
+         trigger: AnalyticsEventTrigger = TentaclesEventTrigger.clicked,
+         otherAttributes: UserContentSharingAttributes) {
+         self.init(category: category, trigger: trigger,
+                   name: name, otherAttributes: otherAttributes)
+    }
+}
+let userContentSharingAttributes = UserContentSharingAttributes(
+content: .video, didUserLikeContent: true, didUserComment: false)
+let userSharedContentEvent = UserContentSharing(otherAttributes: userContentSharingAttributes)
 tentacles.track(userSharedContentEvent)
 ```
-Defining and tracking screen events:
+Defining and tracking a screen event:
 ```swift
+typealias  AnalyticsScreenEvent = AnalyticsEvent<EmptyAttributes>
+extension AnalyticsScreenEvent {
+    init(name: String) {
+        self.init(category: TentaclesEventCategory.screen,
+                  trigger: TentaclesEventTrigger.screenDidAppear,
+                  name: name,
+                  otherAttributes: EmptyAttributes())
+    }
+}
 let screenEvent = AnalyticsScreenEvent(name: "Home Screen")
 tentacles.track(screenEvent)
 ```
@@ -96,11 +128,11 @@ Our Firebase analytice implementation does not support reporting errors, therefo
 In a case where no attributes need to be reported, EmptyAttributes must be used.
 ## Domain driven analytics
 
-When developing an app it is important to understand its domain. Yes we want to track if a user logs in or clicks on a specific button but what we are particular interested is how are users interacting with the core functionalities, the functionalities that should bring the most value to our users. 
+When developing an app it is important to understand its domain. Yes, we want to track if a user logs in or clicks on a specific button, but what we are particular interested is how are users interacting with the core functionalities, the functionalities that should bring the most value to our users. 
 
-[Value proposition](https://en.wikipedia.org/wiki/Value_proposition) is a term borrowed out of marketing and describes the reason why a customer would choose your product. Applying it to an application, it is the reason why a user would choose to use your app. As data related to the value proposition is especially important, tentacles offers a way to connect events that are related to the same value proposition session. 
+[Value proposition](https://en.wikipedia.org/wiki/Value_proposition) is a term borrowed out of marketing and describes the reason why a customer would choose your product. Applying it to an application, it is the reason why a user would choose to use your app. As data related to the value proposition is especially important, Tentacles offers a way to connect events that are related to the same value proposition session. 
 
-A session (identified by UUID) is a period devoted to a particular value proposition activity. The UUID identifying the session is automatically added and managed. This brings the advantage of further possibilities to analyse the data, connections between the events can be derived. For example as Tentacles tracks every status change of a ValueProposition with a timestamp it is easily possible to calculate the duration between the value proposition started and completed. 
+A session (identified by UUID) is a period devoted to a particular value proposition activity. The UUID identifying the session is automatically added and managed. This brings the advantage of further possibilities to analyse the data, as connections between the events can be derived. For example as Tentacles tracks every status change of a ValueProposition with a timestamp it is easily possible to calculate the duration between the value proposition started and completed. 
  
 Lets use Youtube as an example, lets simplify and say their value proposition is offering engaging content, in particular videos.
 To measure this, watching videos is analysed. The user experience of watching a video usually involves these steps:
@@ -117,19 +149,20 @@ These steps are the possible status of a session related to a value proposition 
 ```mermaid
 graph LR
 A(Open) --> B(Start)
-A(Open) --> E(Cancel)
-B(Start) --> C(Pause)
-B(Start) --> D(Complete)
-B(Start) --> E(Cancel)
-C(Pause) --> B(Start)
-
+A --> E
+B --> C(Pause)
+C --> B
+B --> D(Complete)
+C --> E
+B --> E(Cancel)
 ```
-If a prohibited status update occurs a non fatal error event is forwarded and the status is **not** updated. In cases where attributes are specific to a value proposition status they can be added to the action. I.e. if a pause event needs the pausing point of the video, these attributes are then mapped to the analytics events. With reaching completed or canceled the session ends and it gets deallocated. 
+By reaching completed or canceled the session ends and it gets deallocated. 
+If a prohibited status update occurs a non fatal error event is forwarded and the status is **not** updated. In cases where attributes are specific to a value proposition status they can be added to the action. I.e. if a pause event needs the pausing point of the video, these attributes are then mapped to the analytics events. 
 
-Multiple sessions with different ValuePropositions can be managed. However only one session for one ValueProposition. A ValueProposition is equal if name and attributes match, not considering additional attributes that can be added with ValuePropositionAction. 
+Multiple sessions with different ValuePropositions can be managed. However, only one session for one particular ValueProposition. A ValueProposition is equal if name and attributes match, not considering additional attributes that can be added by ValuePropositionAction. 
 
 ### Background & Foreground Applifecycle
-When the app **will resign**, all active value proposition sessions are canceled and cached in memory in case the app enters foreground again. After app **did become active** again, all previous active sessions are reset and updated with a new identifier. For all previous active sessions an open event is sent and then reset to the previous status.
+When the app **will resign**, all active value proposition sessions are canceled and cached in memory in case the app enters foreground again. After app **did become active** again, all previous active sessions are reset and updated with a new identifier. For all previous active sessions an open event is sent and then reset to the previous status that also triggers an event.
 
 ### Defining & Tracking Value Propositions 
 
@@ -205,4 +238,3 @@ Use Cases:
 - Skipping events, i.e. skip all events for a category for a specific reporter.
 
 ### Default Middlewares:
-- ValuePropositionActivDuration, duration the user spend

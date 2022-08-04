@@ -12,6 +12,7 @@ public enum TentaclesEventTrigger: String, AnalyticsEventTrigger {
     case didEnterForeground
     case screenDidAppear
     case willResignActive
+    case userInitiated
     
     public var name: String {
         self.rawValue

@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Register managing analytics related entities, e.g. ``AnalyticsReporting`` and ``Middleware`s.
+/// Register managing analytics related entities, e.g. ``AnalyticsReporting`` and ``Middleware``s.
 public protocol AnalyticsRegister {
     /// Registers reporter to ``AnalyticsRegister`` and its specific ``Middleware``s, middlewares registered this way
     /// only apply to one specific reporter.
