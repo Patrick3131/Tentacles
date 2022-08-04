@@ -8,5 +8,5 @@
 import Foundation
 
 public protocol AnalyticsEventTracking {
-    func track(_ event: any AnalyticsEvent)
+    func track(_ event: AnalyticsEvent<some TentaclesAttributes>)
 }

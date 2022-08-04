@@ -7,6 +7,6 @@
 
 import Foundation
 
-public struct EmptyAttributes: TentaclesAttributes {
-    public init() {}
-}
+/// Used if no attributes are necessary for ``AnalyticsEvent``or
+/// ``ValueProposition``.
+public struct EmptyAttributes: TentaclesAttributes {}

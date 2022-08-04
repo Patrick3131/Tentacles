@@ -29,7 +29,7 @@ final class MiddlewareTests: XCTestCase {
         evaluatePreConditionCeroEventsReported(reporterStub: reporter)
         evaluatePreConditionCeroEventsReported(reporterStub: otherReporter)
         
-        tentacles.register(analyticsReporter: otherReporter, middlewares: [.capitalisedAttributeKeys])
+        tentacles.register(otherReporter, with: [.capitalisedAttributeKeys])
         tentacles.track(AnalyticsEventStub())
         if let event = reporter.isResultEvent(index: 0) {
             XCTAssertNotEqual(event.attributes["Category"],

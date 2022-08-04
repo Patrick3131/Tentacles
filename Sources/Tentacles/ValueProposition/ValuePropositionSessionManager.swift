@@ -33,36 +33,36 @@ class ValuePropositionSessionManager {
     
     private var sessions = [ValuePropositionSession]()
     private let lock = NSLock()
-
-    func process(_ valueProposition: some ValueProposition,
+    
+    func process(_ valueProposition: RawValueProposition,
                  with action: ValuePropositionAction) {
         lock.lock()
-            do {
-                let session: ValuePropositionSession
-                if let index = getFirstIndexSimilarValueProposition(as: valueProposition) {
-                    session = try processActiveSession(for: action,
-                                                           at: index)
-                } else {
-                    session = try initialiseSession(for: valueProposition,
-                                                        and: action)
-                }
-                publishEvent(for: session, with: action)
-            } catch {
-                publish(error)
+        do {
+            let session: ValuePropositionSession
+            if let index = getFirstIndexSimilarValueProposition(as: valueProposition) {
+                session = try processActiveSession(for: action,
+                                                   at: index)
+            } else {
+                session = try initialiseSession(for: valueProposition,
+                                                and: action)
             }
+            publishEvent(for: session, with: action)
+        } catch {
+            publish(error)
+        }
         lock.unlock()
     }
     
     private func processActiveSession(for action: ValuePropositionAction,
                                       at index: Int) throws -> ValuePropositionSession {
         var session = sessions[index]
-        let newStatus = try createStatus(from: session, and: action.status)
+        let newStatus = try makeStatus(from: session, and: action.status)
         session.status = newStatus
-        update(session, index: index)
+        update(session, at: index)
         return session
     }
     
-    private func initialiseSession(for valueProposition: any ValueProposition,
+    private func initialiseSession(for valueProposition: RawValueProposition,
                                    and action: ValuePropositionAction)
     throws -> ValuePropositionSession {
         if action.status == .open {
@@ -75,7 +75,7 @@ class ValuePropositionSessionManager {
         }
     }
     
-    private func update(_ session: ValuePropositionSession, index: Int) {
+    private func update(_ session: ValuePropositionSession, at index: Int) {
         switch session.status {
         case .opened, .started, .paused:
             sessions[index] = session
@@ -84,12 +84,12 @@ class ValuePropositionSessionManager {
         }
     }
     
-    private func getFirstIndexSimilarValueProposition(as valueProposition: any ValueProposition) -> Int? {
+    private func getFirstIndexSimilarValueProposition(as valueProposition: RawValueProposition) -> Int? {
         sessions.firstIndex { valueProposition.isEqual(to: $0.valueProposition) }
     }
     
-    private func createStatus(from session: ValuePropositionSession,
-                              and actionStatus: ValuePropositionAction.Status) throws
+    private func makeStatus(from session: ValuePropositionSession,
+                            and actionStatus: ValuePropositionAction.Status) throws
     -> ValuePropositionSession.Status {
         switch (session.status, actionStatus) {
         case (.opened, .open):
@@ -117,13 +117,13 @@ class ValuePropositionSessionManager {
     private func publishEvent(for session: ValuePropositionSession,
                               with action: ValuePropositionAction) {
         _eventPublisher.send(.success(
-            session.createRawAnalyticsEvent(action: action)))
+            session.makeRawAnalyticsEvent(action: action)))
     }
     
     private func publishEvent(for session: ValuePropositionSession,
                               with trigger: TentaclesEventTrigger) {
         _eventPublisher.send(.success(
-            session.createRawAnalyticsEvent(trigger: trigger)))
+            session.makeRawAnalyticsEvent(trigger: trigger)))
     }
     
     //MARK: Background & Foreground Applifecycle
@@ -131,7 +131,7 @@ class ValuePropositionSessionManager {
     /// Sessions before app went in to background, will be used to reset sessions in case
     /// app enters foreground again.
     private var cachedSessions = [ValuePropositionSession]()
-
+    
     /// When the app will resign, all active sessions are canceled and cached in memory in case
     /// the app enters foreground again.
     func processWillResign() {
@@ -140,7 +140,7 @@ class ValuePropositionSessionManager {
         for (index, session) in sessions.enumerated() {
             var newSession = session
             newSession.status = .canceled
-            update(newSession, index: index)
+            update(newSession, at: index)
             publishEvent(for: newSession,
                          with: TentaclesEventTrigger.willResignActive)
         }

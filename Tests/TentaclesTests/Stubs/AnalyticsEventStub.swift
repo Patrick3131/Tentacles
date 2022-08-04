@@ -8,24 +8,14 @@
 import Foundation
 import Tentacles
 
-struct AnalyticsEventStub: AnalyticsEvent {
-    typealias Attributes = KeyValueAttribute<Int>
-    
-    var category: AnalyticsEventCategory
-    
-    var trigger: AnalyticsEventTrigger
-    
-    var name: String
-    
-    var otherAttributes: Attributes
-}
+typealias AnalyticsEventStub = AnalyticsEvent<KeyValueAttribute<Int>>
 
 extension AnalyticsEventStub {
     init() {
-        self.category = TentaclesEventCategory.interaction
-        self.trigger = TentaclesEventTrigger.clicked
-        self.name = "Test"
-        self.otherAttributes = KeyValueAttribute(key: "test", value: 123)
+        self.init(category: TentaclesEventCategory.interaction,
+                  trigger: TentaclesEventTrigger.clicked,
+                  name: "Test",
+                  otherAttributes: KeyValueAttribute(key: "test", value: 123))
     }
 }
 

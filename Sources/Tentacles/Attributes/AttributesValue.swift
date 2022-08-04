@@ -7,4 +7,5 @@
 
 import Foundation
 
+/// Dictionary containing attribute values that are sent to i.e analytic reporters
 public typealias AttributesValue = [String: AnyHashable]

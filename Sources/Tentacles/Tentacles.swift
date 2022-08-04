@@ -41,7 +41,7 @@ public class Tentacles: AnalyticsRegister {
         middlewares.append(middleware)
     }
     
-    public func register(analyticsReporter: any AnalyticsReporting, middlewares: [Middleware<RawAnalyticsEvent>] = []) {
+    public func register(_ analyticsReporter: any AnalyticsReporting, with middlewares: [Middleware<RawAnalyticsEvent>] = []) {
         analyticsReporter.setup()
         let analyticsUnit: AnalyticsUnit = (reporter: analyticsReporter, middlewares: middlewares)
         self.analyticsUnit.append(analyticsUnit)
@@ -97,7 +97,7 @@ extension Tentacles: UserIdentifying {
 }
 
 extension Tentacles: AnalyticsEventTracking {
-    public func track(_ event: any AnalyticsEvent) {
+    public func track(_ event: AnalyticsEvent<some TentaclesAttributes>) {
        track(RawAnalyticsEvent(analyticsEvent: event))
     }
 }
@@ -110,7 +110,7 @@ extension Tentacles: NonFatalErrorReporting {
 }
 
 extension Tentacles: ValuePropositionTracking {
-    public func track(_ valueProposition: any ValueProposition, with action: ValuePropositionAction) {
+    public func track(_ valueProposition: ValueProposition<some  TentaclesAttributes>, with action: ValuePropositionAction) {
         if valuePropositionSessionManager == nil,
            valuePropositionEventsSubscription == nil {
             valuePropositionSessionManager = .init()
@@ -125,7 +125,8 @@ extension Tentacles: ValuePropositionTracking {
                     }
                 })
         }
-        valuePropositionSessionManager?.process(valueProposition,
+        let rawValueProposition = RawValueProposition(valueProposition: valueProposition)
+        valuePropositionSessionManager?.process(rawValueProposition,
                                                 with: action)
     }
     

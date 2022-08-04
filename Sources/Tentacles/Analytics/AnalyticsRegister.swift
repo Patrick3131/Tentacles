@@ -14,8 +14,8 @@ public protocol AnalyticsRegister {
     ///
     /// Register can manage multiple implementations of ``AnalyticsReporting`` with multiple connected ``Middleware``s.
     /// Calling register will add a new reporter and not overwrite previously added reporters.
-    func register(analyticsReporter: any AnalyticsReporting,
-                  middlewares: [Middleware<RawAnalyticsEvent>])
+    func register(_ analyticsReporter: any AnalyticsReporting,
+                  with middlewares: [Middleware<RawAnalyticsEvent>])
     /// Registers ``Middleware`` that applies to all events for all reporters registered to ``AnalyticsRegister``.
     func register(_ middleware: Middleware<RawAnalyticsEvent>)
     /// Removes all entities: e.g. ``AnalyticsReporting``s and connected ``Middleware``s.

@@ -33,6 +33,7 @@ final class ValuePropositionTests: XCTestCase {
     private let videoName = "Learning Swift"
     private let language = "English"
     private let duration = 3569.0
+    private let watchVideo = "watchVideo"
     private var tentacles: Tentacles!
     private var watchingVideovalueProposition: WatchingVideoValueProposition!
     private var reporterStub: AnalyticsReporterStub!
@@ -41,9 +42,8 @@ final class ValuePropositionTests: XCTestCase {
         reporterStub = AnalyticsReporterStub()
         tentacles = buildTentacles(analyticsReporters: [reporterStub],
                                    errorReporters: [reporterStub])
-        let attributes = WatchingVideoValueProposition
-            .Attributes(videoName: videoName, language: language, duration: duration)
-        watchingVideovalueProposition = WatchingVideoValueProposition(attributes: attributes)
+        let attributes = WatchingVideoAttributes(videoName: videoName, language: language, duration: duration)
+        watchingVideovalueProposition = WatchingVideoValueProposition(name: watchVideo, attributes: attributes)
     }
     
     override func tearDownWithError() throws {
@@ -202,11 +202,10 @@ final class ValuePropositionTests: XCTestCase {
     func testDifferentValuePropositions() throws {
         let otherVideoName = "Studying SwiftUI"
         let otherLanguage = "German"
-        let attributes = WatchingVideoValueProposition
-            .Attributes(videoName: otherVideoName,
+        let attributes = WatchingVideoAttributes(videoName: otherVideoName,
                         language: otherLanguage,
                         duration: 435)
-        let otherValueProposition = WatchingVideoValueProposition(attributes: attributes)
+        let otherValueProposition = WatchingVideoValueProposition(name: watchVideo, attributes: attributes)
         let expectedResults: [ExpectedResult] = [.success,.success,.success]
         let results = testWatchVideoValueProposition(for: [.open(),.start(),.complete()],
                                                      with: expectedResults)
@@ -226,15 +225,15 @@ final class ValuePropositionTests: XCTestCase {
     }
     
     func testValuePropositionIsEqual() throws {
-        let isEqual = WatchingVideoValueProposition.stub
-            .isEqual(to: WatchingVideoValueProposition.stub)
-        XCTAssertTrue(isEqual)
+//        let isEqual = WatchingVideoValueProposition.stub
+//            .isEqual(to: WatchingVideoValueProposition.stub)
+        XCTAssertTrue(false)
     }
     
     func testValuePropositionIsNotEqual() throws {
-        let isNotEqual = WatchingVideoValueProposition.stub
-            .isEqual(to: CommentingValueProposition.stub)
-        XCTAssertFalse(isNotEqual)
+//        let isNotEqual = WatchingVideoValueProposition.stub
+//            .isEqual(to: CommentingValueProposition.stub)
+        XCTAssertFalse(true)
     }
     
     private func testWatchVideoValueProposition(for actions: [ValuePropositionAction],
@@ -247,7 +246,7 @@ final class ValuePropositionTests: XCTestCase {
                              language: language)
     }
     
-    private func testValueProposition(_ valueProposition: some ValueProposition,
+    private func testValueProposition(_ valueProposition: ValueProposition<some TentaclesAttributes>,
                                       for actions: [ValuePropositionAction],
                                       with expectedResults: [ExpectedResult],
                                       videoName: String,
@@ -295,7 +294,7 @@ final class ValuePropositionTests: XCTestCase {
     }
     
     
-    private func trackValueProposition(for valueProposition: some ValueProposition,
+    private func trackValueProposition(for valueProposition: ValueProposition<some TentaclesAttributes>,
                                        with actions: [ValuePropositionAction]) {
         for action in actions {
             tentacles.track(valueProposition, with: action)

@@ -19,8 +19,7 @@ struct ValuePropositionSession {
     
     private var statusTimestamps = [Status: [Double]]()
     private(set) var identifier = SessionIdentifier()
-    let valueProposition: any ValueProposition
-
+    let valueProposition: RawValueProposition
     var status: Status {
         didSet {
             let timestamp = Date.timeIntervalSinceReferenceDate
@@ -33,9 +32,8 @@ struct ValuePropositionSession {
         }
     }
     
-    
     /// When first created the status is set to opened.
-    init(valueProposition: any ValueProposition) {
+    init(valueProposition: RawValueProposition) {
         self.valueProposition = valueProposition
         self.status = .opened
     }
@@ -46,14 +44,14 @@ struct ValuePropositionSession {
         statusTimestamps = [:]
     }
     
-    func createRawAnalyticsEvent(action: ValuePropositionAction) -> RawAnalyticsEvent {
-        var attributes = buildDefaultAttributes(trigger: action.trigger)
+    func makeRawAnalyticsEvent(action: ValuePropositionAction) -> RawAnalyticsEvent {
+        var attributes = makeDefaultAttributes(trigger: action.trigger)
         attributes = combine(attributes, with: action.attributes)
         return RawAnalyticsEvent(name: valueProposition.name, attributes: attributes)
     }
     
-    func createRawAnalyticsEvent(trigger: AnalyticsEventTrigger) -> RawAnalyticsEvent {
-        let attributes = buildDefaultAttributes(trigger: trigger)
+    func makeRawAnalyticsEvent(trigger: AnalyticsEventTrigger) -> RawAnalyticsEvent {
+        let attributes = makeDefaultAttributes(trigger: trigger)
         return RawAnalyticsEvent(name: valueProposition.name,
                                  attributes: attributes)
     }
@@ -69,24 +67,24 @@ struct ValuePropositionSession {
         return newAttributes
     }
     
-    private func buildTimestampAttributes(_ attributes: AttributesValue) -> AttributesValue {
+    private func makeTimestampAttributes(_ attributes: AttributesValue) -> AttributesValue {
         var newAttributes = attributes
         for timestamp in statusTimestamps {
-                for (index, value) in timestamp.value.enumerated() {
-                    if index == 0 {
-                        newAttributes[timestamp.key.rawValue] = value
-                    } else {
-                        newAttributes[timestamp.key.rawValue + "_" + "\(index)"] = value
-                    }
+            for (index, value) in timestamp.value.enumerated() {
+                if index == 0 {
+                    newAttributes[timestamp.key.rawValue] = value
+                } else {
+                    newAttributes[timestamp.key.rawValue + "_" + "\(index)"] = value
+                }
             }
         }
         return newAttributes
     }
     
-    private func buildDefaultAttributes(
+    private func makeDefaultAttributes(
         trigger: AnalyticsEventTrigger) -> AttributesValue {
             var attributes = AttributesValue()
-            let timestampAttributes = buildTimestampAttributes(attributes)
+            let timestampAttributes = makeTimestampAttributes(attributes)
             attributes.merge(timestampAttributes) { _, new in new }
             attributes[KeyAttributes.valuePropositionSessionUUID] = identifier.id.uuidString
             attributes[KeyAttributes.status] = status.rawValue

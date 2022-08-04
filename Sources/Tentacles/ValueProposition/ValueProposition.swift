@@ -13,15 +13,11 @@ import Foundation
 /// It is assumed that the user devotes a session to a particular ValueProposition,
 /// therefore when a  new ValueProposition is tracked by ``ValuePropositionTracking``
 /// a new session is created.
-public protocol ValueProposition {
-    associatedtype Attributes: TentaclesAttributes
-    var name: String { get }
-    var attributes: Attributes { get }
-}
-
-public extension ValueProposition {
-    func isEqual(to other: any ValueProposition) -> Bool {
-        (self.name == other.name)
-        && (self.attributes.serialiseToValue() == other.attributes.serialiseToValue())
+public struct ValueProposition<Attributes: TentaclesAttributes> {
+    public let name: String
+    public let attributes: TentaclesAttributes
+    public init(name: String, attributes: Attributes) {
+        self.name = name
+        self.attributes = attributes
     }
 }

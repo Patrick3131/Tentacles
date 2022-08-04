@@ -16,7 +16,7 @@ public struct RawAnalyticsEvent {
 }
 
 extension RawAnalyticsEvent {
-    init(analyticsEvent: some AnalyticsEvent) {
+    init(analyticsEvent: AnalyticsEvent<some TentaclesAttributes>) {
         self.name = analyticsEvent.name
         var attributes = AttributesValue()
         attributes[KeyAttributes.trigger] = analyticsEvent.trigger.name

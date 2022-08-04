@@ -7,7 +7,8 @@
 
 import Foundation
 
-/// Namespace for static lets that are used as default keys in ``AttributesValue``
+/// Namespace for static lets that are used as default keys in ``AttributesValue`` for
+/// ``RawAnalyticsEvent`
 public enum KeyAttributes {
     public static let category = "category"
     public static let sessionUUID = "sessionId"

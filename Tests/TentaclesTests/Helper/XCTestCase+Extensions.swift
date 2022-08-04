@@ -13,7 +13,7 @@ extension XCTestCase {
                         errorReporters: [NonFatalErrorReporting] = [],
                         commonMiddlewares: [Middleware<RawAnalyticsEvent>] = []) -> Tentacles {
         let tentacles = Tentacles()
-        analyticsReporters.forEach { tentacles.register(analyticsReporter: $0) }
+        analyticsReporters.forEach { tentacles.register($0) }
         commonMiddlewares.forEach { tentacles.register($0)}
         return tentacles
     }
