@@ -10,7 +10,7 @@ import Foundation
 /// Middleware to transform an Item or skip it.
 ///
 /// Middleware where Item == ``RawAnalyticsEvent`` can be registered via ``AnalyticsRegister``
-/// to a specific ``ÀnalyticsReporting`` entity or be universally used for all reporters.
+/// to a specific ``AnalyticsReporting`` entity or be universally used for all reporters.
 public struct Middleware<Item> {
     /// Action to forward an Item or skip it.
     public enum Action {

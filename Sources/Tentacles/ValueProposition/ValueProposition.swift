@@ -15,10 +15,10 @@ import Foundation
 /// It is assumed that the user devotes a time duration to a particular ValueProposition,
 /// therefore when a ValueProposition is initially tracked by ``ValuePropositionTracking``
 /// a new session (identified by UUID) is created.
-/// The session is managed  internally by Tentacles, also its UUID.
+/// The session and its UUID is managed internally by Tentacles.
 ///
 /// This brings the advantage of further possibilities to analyse the data, as connections between the events can be derived.
-/// For example as ``Tentacles`` tracks every status change of a ``ValuePropositionSession`` with a timestamp
+/// For example as ``Tentacles`` tracks every status change of a session with a timestamp
 /// it is easily possible to calculate the duration between the ``ValueProposition`` started and completed.
 ///
 /// When a ``ValueProposition`` is tracked with an ``ValuePropositionAction``, the status of the session is
@@ -35,7 +35,7 @@ import Foundation
 ///```
 /// By reaching completed or canceled the session ends and it gets deallocated.
 /// If a prohibited status update occurs a non fatal error event is forwarded and the status is **not** updated.
-/// In cases where attributes are specific to a ``ValuePropositionSession`` status they can be
+/// In cases where attributes are specific to a session status they can be
 /// added to the ``ValuePropositionAction``. I.e. if a pause event needs the pausing point of the video,
 /// these attributes are then mapped to the generated ``RawAnalyticsEvent``s.
 ///

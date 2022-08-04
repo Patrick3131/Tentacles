@@ -7,9 +7,9 @@
 
 import Foundation
 
-/// Action to trigger an update of the ``ValuePropositionSession``.
+/// Action to trigger an update of a ``ValueProposition`` session.
 public struct ValuePropositionAction {
-    /// Possible status updates for ``ValuePropositionSession``.
+    /// Possible status updates for a ``ValueProposition`` session.
     ///
     /// Status changes that are allowed:
     ///
