@@ -8,6 +8,6 @@
 import Foundation
 
 public protocol ValuePropositionTracking {
-    func track(for valueProposition: any ValueProposition,
+    func track(_ valueProposition: any ValueProposition,
                 with action: ValuePropositionAction)
 }

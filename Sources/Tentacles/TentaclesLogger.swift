@@ -31,7 +31,7 @@ struct TentaclesLogger: AnalyticsReporting {
         logger.info("Tentacles logger set up")
     }
     
-    func report(event: RawAnalyticsEvent) {
+    func report(_ event: RawAnalyticsEvent) {
         logger.log("Analytics event: \(event.name), with attributes: \(event.attributes)")
     }
 }

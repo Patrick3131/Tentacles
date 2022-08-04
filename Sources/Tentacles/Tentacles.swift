@@ -47,7 +47,7 @@ public class Tentacles: AnalyticsRegister {
         self.analyticsUnit.append(analyticsUnit)
     }
     
-    public func resetRegister() {
+    public func reset() {
         analyticsUnit = []
         middlewares = []
     }
@@ -75,7 +75,7 @@ public class Tentacles: AnalyticsRegister {
                 }
             }
             if let newEvent {
-                reporter.report(event: newEvent)
+                reporter.report(newEvent)
             }
         }
     }
@@ -110,7 +110,7 @@ extension Tentacles: NonFatalErrorReporting {
 }
 
 extension Tentacles: ValuePropositionTracking {
-    public func track(for valueProposition: any ValueProposition, with action: ValuePropositionAction) {
+    public func track(_ valueProposition: any ValueProposition, with action: ValuePropositionAction) {
         if valuePropositionSessionManager == nil,
            valuePropositionEventsSubscription == nil {
             valuePropositionSessionManager = .init()
@@ -125,8 +125,8 @@ extension Tentacles: ValuePropositionTracking {
                     }
                 })
         }
-        valuePropositionSessionManager?.process(for: valueProposition,
-                                                      with: action)
+        valuePropositionSessionManager?.process(valueProposition,
+                                                with: action)
     }
     
 #if canImport(UIKit) || canImport(AppKit)

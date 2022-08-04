@@ -45,7 +45,7 @@ public protocol AnalyticsReporting: UserIdentifying, NonFatalErrorReporting {
     ///
     /// Setup is called when the reporter is registered to ``AnalyticsRegister``.
     func setup()
-    func report(event: RawAnalyticsEvent)
+    func report(_ event: RawAnalyticsEvent)
     func addUserAttributes(_ attributes: AttributesValue)
 }
 

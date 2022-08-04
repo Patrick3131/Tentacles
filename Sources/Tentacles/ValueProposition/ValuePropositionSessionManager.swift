@@ -34,7 +34,7 @@ class ValuePropositionSessionManager {
     private var sessions = [ValuePropositionSession]()
     private let lock = NSLock()
 
-    func process(for valueProposition: some ValueProposition,
+    func process(_ valueProposition: some ValueProposition,
                  with action: ValuePropositionAction) {
         lock.lock()
             do {

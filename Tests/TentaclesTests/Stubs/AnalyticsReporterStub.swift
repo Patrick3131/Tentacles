@@ -47,7 +47,7 @@ class AnalyticsReporterStub: AnalyticsReporting {
     
     func setup() {}
     
-    func report(event: RawAnalyticsEvent) {
+    func report(_ event: RawAnalyticsEvent) {
         results.append(.success(event))
         _resultPublisher.send(.success(event))
     }
