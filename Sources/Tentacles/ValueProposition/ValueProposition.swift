@@ -50,6 +50,9 @@ public struct ValueProposition<Attributes: TentaclesAttributes> {
     public let name: String
     /// Attributes that are relevant to the ``ValueProposition``.
     public let attributes: TentaclesAttributes
+}
+
+extension ValueProposition  {
     
     public init(name: String, attributes: Attributes) {
         self.name = name

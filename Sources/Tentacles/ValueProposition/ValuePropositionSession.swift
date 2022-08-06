@@ -22,20 +22,15 @@ struct ValuePropositionSession {
     let valueProposition: RawValueProposition
     var status: Status {
         didSet {
-            let timestamp = Date.timeIntervalSinceReferenceDate
-            if var timestamps = statusTimestamps[status] {
-                timestamps.append(timestamp)
-                statusTimestamps[status] = timestamps
-            } else {
-                statusTimestamps[status] = [timestamp]
-            }
+            addTimestamp(for: status)
         }
     }
     
     /// When first created the status is set to opened.
-    init(valueProposition: RawValueProposition) {
+    init(for valueProposition: RawValueProposition) {
         self.valueProposition = valueProposition
         self.status = .opened
+        addTimestamp(for: status)
     }
     
     /// Sets UUID to a new UUID, and removes all timestamps for previous status changes.
@@ -65,6 +60,16 @@ struct ValuePropositionSession {
             }
         }
         return newAttributes
+    }
+    
+    mutating private func addTimestamp(for status: Status) {
+        let timestamp = Date.timeIntervalSinceReferenceDate
+        if var timestamps = statusTimestamps[status] {
+            timestamps.append(timestamp)
+            statusTimestamps[status] = timestamps
+        } else {
+            statusTimestamps[status] = [timestamp]
+        }
     }
     
     private func makeTimestampAttributes(_ attributes: AttributesValue) -> AttributesValue {

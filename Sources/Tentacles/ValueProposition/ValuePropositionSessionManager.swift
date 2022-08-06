@@ -70,7 +70,7 @@ class ValuePropositionSessionManager {
     throws -> ValuePropositionSession {
         if action.status == .open {
             let newSession = ValuePropositionSession(
-                valueProposition: valueProposition)
+                for: valueProposition)
             sessions.append(newSession)
             return newSession
         } else {

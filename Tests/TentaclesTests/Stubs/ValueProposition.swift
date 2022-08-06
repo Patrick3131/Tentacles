@@ -8,11 +8,6 @@
 import Foundation
 import Tentacles
 
-
-//static let stub: Self = .init(attributes:
-//        .init(videoName: "Learning Swift",
-//              language: "English",
-//              duration: 450))
 typealias WatchingVideoValueProposition = ValueProposition<WatchingVideoAttributes>
 struct WatchingVideoAttributes: TentaclesAttributes {
     let videoName: String
