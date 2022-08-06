@@ -7,8 +7,8 @@
 
 import Foundation
 
-/// Represents a raw type of ``ValueProposition`` to store internally to keep Attributes for
-/// ``ValueProposition`` type safe
+/// Represents a raw type of ``ValueProposition`` to store internally to keep attributes for
+/// ``ValueProposition`` type safe.
 struct RawValueProposition {
     let name: String
     let attributes: TentaclesAttributes

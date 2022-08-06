@@ -3,7 +3,7 @@
 Current State: ****Work in Progress**** Documentation & Tests started but not done yet, Implementation of first version pretty much done
 # Welcome to Tentacles
 
-Tentacles are body parts that an animal uses to hold, grab or even feel things. That is what Tentacles is used for in terms of data collection in your application. It helps you to abstract analytics from specific providers, to structure your analytic events in a typesafe way and to collect meaning full domain-driven data with ValueProposition.
+Tentacles are body parts that an animal uses to hold, grab or even feel things. That is what Tentacles is used for in terms of data collection in your application. It helps you to abstract analytics from specific providers, to structure your analytic events in a typesafe way and to collect meaningfull domain-driven data with ValueProposition.
 
 For further information why abstracting a third party library make sense [Benoit Pasquier wrote an article](https://benoitpasquier.com/abstract-ios-third-party-libraries/).
 
@@ -55,7 +55,7 @@ In the case where we want to register a Middleware to affect events going to all
 ```swift
 tentacles.register(.capitalisedAttributeKeys)
 ```
-Of if we want to add a Middleware only affecting events for a specific reporter:
+Or if we want to add a Middleware only affecting events for a specific reporter:
 ```swift
 tentacles.register(analyticsReporter: firebaseReporter, middlewares: [.ignoreLifecycleEvents])
 ```
@@ -76,19 +76,17 @@ struct UserContentSharingAttributes: TentaclesAttributes {
     }
 }
 ```
-Adding your own custom AnalyticsEventCategory :
+Adding your own AnalyticsEventCategory (Adding AnalyticsEventTrigger works the same way) :
 ```swift
-enum MyAppAnalyticsEventCategory:String, AnalyticsEventCategory {
+enum MyAppAnalyticsEventCategory: String, AnalyticsEventCategory {
     case social
     var name: String {
         self.rawValue
     }
 }
 ``` 
-Defining AnalyticsEvent:
-```swift
 
-```
+Defining AnalyticsEvent:
 ```swift
 typealias UserContentSharing = AnalyticsEvent<UserContentSharingAttributes>
 extension UserContentSharing {
@@ -123,7 +121,7 @@ Tracking an error is also possible:
 ```swift
 tentacles.report(error)
 ```
-Our Firebase analytice implementation does not support reporting errors, therefore this would not report anything. We would need to add a AnalyticsReporting implementation for a service like Crashlytics, it is the same process as described above for Firebase analytics.
+Our Firebase analytics implementation does not support reporting errors, therefore this would not report anything. We would need to add a AnalyticsReporting implementation for a service like Crashlytics, it is the same process as described above for Firebase analytics.
 
 In a case where no attributes need to be reported, EmptyAttributes must be used.
 ## Domain driven analytics
@@ -167,27 +165,19 @@ When the app **will resign**, all active value proposition sessions are canceled
 ### Defining & Tracking Value Propositions 
 
 ```swift
-struct WatchingVideo: ValueProposition {
-    let name: String = "watchingVideo"
-    let attributes: Attributes
-    init(attributes: Attributes) {
-        self.attributes = attributes
-    }
+struct VideoWatchingAttributes: TentaclesAttributes {
+    videoName: String
+    language: String
+    duration: Double  // in seconds
 }
 
-extension WatchingVideo {
-    struct Attributes: TentaclesAttributes {
-        let videoName: String
-        let language: String
-        let double: Double // in seconds
-    }
-}
+typealias VideoWatching = ValueProposition<VideoWatchingAttributes>
 
-let attributes = WatchingVideo.Attributes(
+let attributes = VideoWatchingAttributes.Attributes(
     videoName: "Learning Swift", language: "English", duration: 3240)
-let watchingVideo = WatchingVideo(attributes: attributes)
+let videoWatching = VideoWatching(name: "videoWatching", attributes: attributes)
 let action = ValuePropositionAction(status: .open, trigger: .clicked)
-tracker.track(for: watchingVideo, with: action)
+tracker.track(for: videoWatching, with: action)
 ```
 
 There are convenient static functions to build an action e.g.:
@@ -206,7 +196,7 @@ struct WatchingVideoCompletionAttributes: TentaclesAttributes {
 
 let completionAttributes = WatchingVideoCompletionAttributes(
     secondsSkipped: 300, userCommented: false)
-tracker.track(for: watchingVideo, with: .complete(trigger: .automatically, attributes: completionAttributes))
+tracker.track(for: videoWatching, with: .complete(trigger: .automatically, attributes: completionAttributes))
 ```
 
 ## Default attributes

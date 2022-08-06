@@ -8,7 +8,7 @@
 import Foundation
 
 public enum TentaclesEventCategory: String, AnalyticsEventCategory {
-    case lifecyle
+    case lifecycle
     case navigation
     case interaction
     case valueProposition

@@ -24,6 +24,3 @@ public extension TentaclesAttributes {
     }
 }
 
-
-
-
