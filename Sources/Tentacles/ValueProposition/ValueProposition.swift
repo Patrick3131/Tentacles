@@ -53,7 +53,6 @@ public struct ValueProposition<Attributes: TentaclesAttributes> {
 }
 
 extension ValueProposition  {
-    
     public init(name: String, attributes: Attributes) {
         self.name = name
         self.attributes = attributes

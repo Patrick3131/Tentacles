@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import Tentacles
+@testable import Tentacles
 
 final class MiddlewareTests: XCTestCase {
     private var reporter: AnalyticsReporterStub!
@@ -25,7 +25,6 @@ final class MiddlewareTests: XCTestCase {
 
     func testMiddlewareForSpecificReporter() throws {
         let otherReporter = AnalyticsReporterStub()
-        
         evaluatePreConditionCeroEventsReported(reporterStub: reporter)
         evaluatePreConditionCeroEventsReported(reporterStub: otherReporter)
         
@@ -80,12 +79,38 @@ final class MiddlewareTests: XCTestCase {
         evaluateNumberOfEventsReported(1, for: reporter)
     }
     
-    func testValuePropositionDurationStartedToCompleted() throws {
-        XCTAssertTrue(false)
+    func testValuePropositionDurationStartedToCompletedTransformed() throws {
+        let middleware = Middleware<RawAnalyticsEvent>
+            .durationValueProposition(between: .start, and: .complete)
+        var event = RawAnalyticsEvent()
+        event.attributes[KeyAttributes.category] = TentaclesEventCategory.valueProposition.name
+        event.attributes["started"] = 1234.0
+        event.attributes["completed"] = 1334.0
+        let closureAction = middleware.closure(event)
+        switch closureAction {
+        case .forward(let event):
+            let durationStartedCompleted: Double = try event.getValueAttribute(
+                for: "durationStartedCompleted")
+            XCTAssertEqual(durationStartedCompleted, 100)
+        case .skip:
+            XCTAssertTrue(false)
+        }
     }
     
-    func testValuePropositionDurationStartedToCanceled() throws {
-        XCTAssertTrue(false)
+    func testValuePropositionDurationStartedToCompletedNotTransformed() throws {
+        let middleware = Middleware<RawAnalyticsEvent>
+            .durationValueProposition(between: .start, and: .complete)
+        let event = RawAnalyticsEvent()
+        let closureAction = middleware.closure(event)
+        switch closureAction {
+        case.forward(let event):
+            let durationStartedCompleted: Double? = try? event.getValueAttribute(
+                for: "durationStartedCompleted")
+            XCTAssertNil(durationStartedCompleted)
+        case .skip:
+            XCTAssertTrue(false)
+            
+        }
     }
     
     func testSpecificMiddlewareForASpecificProvider() throws {

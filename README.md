@@ -3,7 +3,7 @@
 Current State: ****Work in Progress**** Documentation & Tests started but not done yet, Implementation of first version pretty much done
 # Welcome to Tentacles
 
-Tentacles are body parts that an animal uses to hold, grab or even feel things. That is what Tentacles is used for in terms of data collection in your application. It helps you to abstract analytics from specific providers, to structure your analytic events in a typesafe way and to collect meaningfull domain-driven data with ValueProposition.
+Tentacles are body parts that an animal uses to hold, grab or even feel things. That is what Tentacles is used for in terms of data collection in your application. It helps you to abstract analytics from specific providers, to structure your analytic events in a type-safe way and to collect meaningful domain-driven data with ValueProposition.
 
 For further information why abstracting a third party library make sense [Benoit Pasquier wrote an article](https://benoitpasquier.com/abstract-ios-third-party-libraries/).
 
@@ -12,7 +12,7 @@ For further information why abstracting a third party library make sense [Benoit
     - Analytics event reporting
     - Error reporting
     - Adding user attributes
-- Typesafety for events and no manual data converting between event layers
+- Type-safety for events and no manual data converting between event layers
 - Domain-driven analytics with ValueProposition
 - Middleware to transform/ignore events for reporters
 
@@ -132,7 +132,7 @@ When developing an app it is important to understand its domain. Yes, we want to
 
 A session (identified by UUID) is a period devoted to a particular value proposition activity. The UUID identifying the session is automatically added and managed. This brings the advantage of further possibilities to analyse the data, as connections between the events can be derived. For example as Tentacles tracks every status change of a ValueProposition with a timestamp it is easily possible to calculate the duration between the value proposition started and completed. 
  
-Lets use Youtube as an example, lets simplify and say their value proposition is offering engaging content, in particular videos.
+Let's use Youtube as an example, let's simplify and say their value proposition is offering engaging content, in particular videos.
 To measure this, watching videos is analysed. The user experience of watching a video usually involves these steps:
 ```mermaid
 graph LR
