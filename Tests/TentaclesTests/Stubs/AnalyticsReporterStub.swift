@@ -10,7 +10,6 @@ import Tentacles
 import Combine
 
 class AnalyticsReporterStub: AnalyticsReporting {
-    
     private let _analyticsEventPublisher: PassthroughSubject<Result<RawAnalyticsEvent, Error>, Never> = .init()
     /// Used to test async code
     lazy var analyticsEventPublisher = _analyticsEventPublisher.eraseToAnyPublisher()

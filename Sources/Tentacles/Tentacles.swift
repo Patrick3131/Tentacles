@@ -14,6 +14,11 @@ import AppKit
 import UIKit
 #endif
 
+/// Tentacles provides methods for registering ``AnalyticsReporting``services,
+///  tracking ``AnalyticsEvents``, ``ValueProposition``s and non-fatal errors, identifying the user at
+///  ``AnalyticsReporting``services and setting user attributes.
+///
+/// For documentation check out the Protocols and the top level README.
 public class Tentacles: AnalyticsRegister, UserIdentifying, AnalyticsEventTracking, NonFatalErrorReporting {
     private typealias AnalyticsUnit = (reporter: any AnalyticsReporting, middlewares: [Middleware<RawAnalyticsEvent>])
     private var analyticsUnit = [AnalyticsUnit]()
