@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Event reported to ``AnalyticsReporter``.
+/// Event reported to ``AnalyticsReporting``.
 public struct RawAnalyticsEvent: Equatable {
     enum Error: Swift.Error {
         case keyNotAvailable

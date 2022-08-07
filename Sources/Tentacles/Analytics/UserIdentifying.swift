@@ -16,5 +16,7 @@ public protocol UserIdentifying {
     func identify(with id: String)
     /// Resets the identity of a user.
     func logout()
+    /// Adds attributes to the user, attributes could be i.e. age, gender,
+    /// nationality etc.
     func addUserAttributes(_ attributes: Attributes)
 }

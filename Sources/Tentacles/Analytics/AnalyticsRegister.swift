@@ -19,5 +19,6 @@ public protocol AnalyticsRegister {
     /// Registers ``Middleware`` that applies to all events for all reporters registered to ``AnalyticsRegister``.
     func register(_ middleware: Middleware<RawAnalyticsEvent>)
     /// Removes all entities: e.g. ``AnalyticsReporting``s and connected ``Middleware``s.
+    /// Resets identifier of Tentacles session.
     func reset()
 }

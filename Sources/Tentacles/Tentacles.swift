@@ -15,7 +15,7 @@ import UIKit
 #endif
 
 /// Tentacles provides methods for registering ``AnalyticsReporting``services,
-///  tracking ``AnalyticsEvents``, ``ValueProposition``s and non-fatal errors, identifying the user at
+///  tracking ``AnalyticsEvent``s, ``ValueProposition``s and non-fatal errors, identifying the user at
 ///  ``AnalyticsReporting``services and setting user attributes.
 ///
 /// For documentation check out the Protocols and the top level README.
@@ -55,6 +55,7 @@ public class Tentacles: AnalyticsRegister, UserIdentifying, AnalyticsEventTracki
     public func reset() {
         analyticsUnit = []
         middlewares = []
+        identifier.reset()
     }
     
     public func identify(with id: String) {
@@ -71,7 +72,9 @@ public class Tentacles: AnalyticsRegister, UserIdentifying, AnalyticsEventTracki
     }
 
     public func track(_ event: AnalyticsEvent<some TentaclesAttributes>) {
-       track(RawAnalyticsEvent(analyticsEvent: event))
+        var rawEvent = RawAnalyticsEvent(analyticsEvent: event)
+        rawEvent.attributes[KeyAttributes.sessionUUID] = identifier.id.uuidString
+       track(rawEvent)
     }
 
     public func report(_ error: Error, filename: String = #file, line: Int = #line) {

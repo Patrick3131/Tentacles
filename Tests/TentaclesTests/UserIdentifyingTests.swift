@@ -26,6 +26,9 @@ final class UserIdentifyingTests: XCTestCase {
     override func tearDownWithError() throws {
         reporter = nil
         tentacles = nil
+        identifiedSub = nil
+        userAttributesSub = nil
+        logOutSub = nil
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 

@@ -15,7 +15,7 @@ public struct Middleware<Item> {
     /// Action to forward an Item or skip it.
     public enum Action {
         /// Item will be forwarded by the consumer of the ``Middleware``, usually after it has been
-        /// transformed. If the item was not transformed it sill needs to be forwarded otherwise it will be
+        /// transformed. If the item was not transformed it still needs to be forwarded otherwise it will be
         /// ignored.
         case forward(Item)
         /// Item will be skipped by the consumer of the ``Middleware``.

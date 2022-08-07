@@ -23,8 +23,8 @@ class AnalyticsReporterStub: AnalyticsReporting {
     private let _logOutPublisher: PassthroughSubject<Void, Never> = .init()
     lazy var logOutPublisher = _logOutPublisher.eraseToAnyPublisher()
     
-    private let _setUpPublisher: PassthroughSubject<Void, Never> = .init()
-    lazy var setUpPublisher = _setUpPublisher.eraseToAnyPublisher()
+    private let _setupPublisher: PassthroughSubject<Void, Never> = .init()
+    lazy var setupPublisher = _setupPublisher.eraseToAnyPublisher()
     
     func report(_ error: Error, filename: String, line: Int) {
         _analyticsEventPublisher.send(.failure(error))
@@ -43,7 +43,7 @@ class AnalyticsReporterStub: AnalyticsReporting {
     }
     
     func setup() {
-        _setUpPublisher.send(())
+        _setupPublisher.send(())
     }
     
     func report(_ event: RawAnalyticsEvent) {
