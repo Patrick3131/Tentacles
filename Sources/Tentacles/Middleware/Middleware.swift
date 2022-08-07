@@ -40,7 +40,21 @@ public extension Middleware where Item == RawAnalyticsEvent {
         return .forward(RawAnalyticsEvent(name: event.name, attributes: attributes))
     }
     
-    static func durationValueProposition(
+    /// ``Middleware`` to calculate the duration between two status of ``ValuePropositionAction`` related to a ``ValueProposition``.
+    ///
+    /// ``RawAnalyticsEvent``s that will be transformed need to be of category
+    ///  valueProposition, and need to be derived by a ``ValueProposition`` that
+    ///  has been affected by a ``ValuePropositionAction`` with both status.
+    ///  If successful transformed a new duration attribute with a Double will be added
+    ///  to the attributes.
+    ///
+    /**
+     calculateValuePropositionDuration(
+         between: .open,
+         and: .completed)
+     */
+    /// In case of a successful transformation this would add a double value with **durationOpenedCompleted** as a key to the the attributes of ``RawAnalyticsEvent``.
+    static func calculateValuePropositionDuration(
         between status: ValuePropositionAction.Status,
         and otherStatus: ValuePropositionAction.Status)
     -> Self {
@@ -64,6 +78,28 @@ public extension Middleware where Item == RawAnalyticsEvent {
                 print(error.localizedDescription)
                 return .forward(event)
             }
+        }
+    }
+
+    static func skipEvent(for category: AnalyticsEventCategory)
+    -> Self {
+        return Self { event -> Action in
+            do {
+                let categoryValue: String = try event.getValueAttribute(
+                    for: KeyAttributes.category)
+                if categoryValue == category.name {
+                    return .skip
+                }
+                return .forward(event)
+            } catch {
+                return .forward(event)
+            }
+        }
+    }
+    
+    static func skipEvent(for names: [String]) -> Self {
+        return Self { event -> Action in
+            names.contains(event.name) ? .skip : .forward(event)
         }
     }
 }

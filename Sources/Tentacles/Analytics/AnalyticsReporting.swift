@@ -8,7 +8,7 @@
 import Foundation
 
 /// Abstraction to implement a specific analytics reporter, this could be the apps backend,
-/// a third party service like Firebase or a local logger
+/// a third party service like Firebase or a local logger.
 ///
 ///Example for AnalyticsReporting implementation for a Logger:
 /// ````

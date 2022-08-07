@@ -10,65 +10,44 @@ import Tentacles
 import Combine
 
 class AnalyticsReporterStub: AnalyticsReporting {
-    func report(_ error: Error, filename: String, line: Int) {
-        results.append(.failure(error))
-        _resultPublisher.send(.failure(error))
-    }
     
-    func identify(with id: String) {}
-    
-    func logout() {}
-    
-    func addUserAttributes(_ attributes: AttributesValue) {}
-    
-    /// Used to test sync code
-    var results = [Result<RawAnalyticsEvent, Error>]()
-    /// Used to test sync code
-    var errorResults: [Error] {
-        results.compactMap { result in
-            switch result {
-            case .success: return nil
-            case .failure(let error): return error
-            }
-        }
-    }
-    /// Used to test sync code
-    var eventResults: [RawAnalyticsEvent] {
-        results.compactMap { result in
-            switch result {
-            case .success(let event): return event
-            case .failure: return nil
-            }
-        }
-     }
-    private let _resultPublisher: PassthroughSubject<Result<RawAnalyticsEvent, Error>, Never> = .init()
+    private let _analyticsEventPublisher: PassthroughSubject<Result<RawAnalyticsEvent, Error>, Never> = .init()
     /// Used to test async code
-    lazy var resultPublisher = _resultPublisher.eraseToAnyPublisher()
+    lazy var analyticsEventPublisher = _analyticsEventPublisher.eraseToAnyPublisher()
     
-    func setup() {}
+    private let _idPublisher: PassthroughSubject<String, Never> = .init()
+    lazy var idPublisher = _idPublisher.eraseToAnyPublisher()
+    
+    private let _userAttributesPublisher: PassthroughSubject<AttributesValue, Never> = .init()
+    lazy var userAttributesPublisher = _userAttributesPublisher.eraseToAnyPublisher()
+    
+    private let _logOutPublisher: PassthroughSubject<Void, Never> = .init()
+    lazy var logOutPublisher = _logOutPublisher.eraseToAnyPublisher()
+    
+    private let _setUpPublisher: PassthroughSubject<Void, Never> = .init()
+    lazy var setUpPublisher = _setUpPublisher.eraseToAnyPublisher()
+    
+    func report(_ error: Error, filename: String, line: Int) {
+        _analyticsEventPublisher.send(.failure(error))
+    }
+    
+    func identify(with id: String) {
+        _idPublisher.send(id)
+    }
+    
+    func logout() {
+        _logOutPublisher.send(())
+    }
+    
+    func addUserAttributes(_ attributes: AttributesValue) {
+        _userAttributesPublisher.send(attributes)
+    }
+    
+    func setup() {
+        _setUpPublisher.send(())
+    }
     
     func report(_ event: RawAnalyticsEvent) {
-        results.append(.success(event))
-        _resultPublisher.send(.success(event))
-    }
-}
-
-extension AnalyticsReporterStub {
-    func isResultEvent(index: Int) -> RawAnalyticsEvent? {
-        let result = results[index]
-        switch result {
-        case .success(let event):
-            return event
-        case .failure: return nil
-        }
-    }
-    
-    func isResultError(index: Int) -> Error? {
-        let result = results[index]
-        switch result {
-        case .success: return nil
-        case .failure(let error):
-            return error
-        }
+        _analyticsEventPublisher.send(.success(event))
     }
 }

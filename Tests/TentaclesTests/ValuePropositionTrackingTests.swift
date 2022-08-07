@@ -53,6 +53,26 @@ final class ValuePropositionTests: XCTestCase {
         resultsSubscription = nil
     }
     
+    func testOpenEvent() throws {
+        let _ = testWatchVideoValueProposition(for: [.open()],
+                                               with: [.success])
+    }
+    
+    func testOpenCancelEvent() throws {
+        let _ = testWatchVideoValueProposition(for: [.open(), .cancel()],
+                                               with: Array(repeating: .success, count: 2))
+    }
+    
+    func testOpenCompleteEvent() throws {
+        let _ = testWatchVideoValueProposition(for: [.open(), .complete()],
+                                               with: [.success, .error])
+    }
+    
+    func testOpenPauseEvent() throws {
+        let _ = testWatchVideoValueProposition(for: [.open(), .pause()],
+                                               with: [.success, .error])
+    }
+    
     func testOpenStartCompleteEvents() throws {
         let _ = testWatchVideoValueProposition(for: [.open(),.start(),.complete()],
                                                with: Array(repeating: .success, count: 3))
@@ -83,6 +103,11 @@ final class ValuePropositionTests: XCTestCase {
                                                with: Array(repeating: .success, count: 3))
     }
     
+    func testStartEvent() throws {
+        let _ = testWatchVideoValueProposition(for: [.open()],
+                                               with: [.success])
+    }
+    
     func testStartCompleteEvents() throws {
         let _ = testWatchVideoValueProposition(for: [.start(), .complete()],
                                                with: Array(repeating: .error, count: 2))
@@ -91,31 +116,6 @@ final class ValuePropositionTests: XCTestCase {
     func testStartCancelEvents() throws {
         let _ = testWatchVideoValueProposition(for: [.start(),.cancel()],
                                                with: Array(repeating: .error, count: 2))
-    }
-    
-    func testOpenEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.open()],
-                                               with: [.success])
-    }
-    
-    func testOpenCancelEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.open(), .cancel()],
-                                               with: Array(repeating: .success, count: 2))
-    }
-    
-    func testOpenCompleteEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.open(), .complete()],
-                                               with: [.success, .error])
-    }
-    
-    func testOpenPauseEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.open(), .pause()],
-                                               with: [.success, .error])
-    }
-    
-    func testStartEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.open()],
-                                               with: [.success])
     }
     
     func testPauseEvent() throws {
@@ -134,15 +134,17 @@ final class ValuePropositionTests: XCTestCase {
     }
     
     func testDeallocationAfterCancel() throws {
-        let results = testWatchVideoValueProposition(for: [.open(),.cancel(),.open()],
-                                                     with: Array(repeating: .success, count: 3))
+        let results = testWatchVideoValueProposition(
+            for: [.open(),.cancel(),.open()],
+            with: Array(repeating: .success, count: 3))
         XCTAssertTrue(isSessionSimilar(at: 0, and: 1, results: results))
         XCTAssertFalse(isSessionSimilar(at: 1, and: 2, results: results))
     }
     
     func testDeallocationAfterComplete() throws {
-        let results = testWatchVideoValueProposition(for: [.open(),.start(),.complete(),.open()],
-                                                     with: Array(repeating: .success, count: 4))
+        let results = testWatchVideoValueProposition(
+            for: [.open(),.start(),.complete(),.open()],
+            with: Array(repeating: .success, count: 4))
         XCTAssertTrue(isSessionSimilar(at: 0, and: 2, results: results))
         XCTAssertFalse(isSessionSimilar(at: 2, and: 3, results: results))
     }
@@ -159,7 +161,7 @@ final class ValuePropositionTests: XCTestCase {
             #endif
             var results = [Swift.Result<RawAnalyticsEvent, Error>]()
             let expectation = expectation(description: "numberOfExpectedResults")
-            resultsSubscription = reporterStub.resultPublisher.sink { result in
+            resultsSubscription = reporterStub.analyticsEventPublisher.sink { result in
                 results.append(result)
                 if results.count == 5 {
                     expectation.fulfill()
@@ -224,12 +226,6 @@ final class ValuePropositionTests: XCTestCase {
                                        expectedCount: 6)
     }
     
-    func testValuePropositionIsEqual() throws {
-//        let isEqual = WatchingVideoValueProposition.stub
-//            .isEqual(to: WatchingVideoValueProposition.stub)
-        XCTAssertTrue(false)
-    }
-    
     func testValuePropositionIsNotEqual() throws {
 //        let isNotEqual = WatchingVideoValueProposition.stub
 //            .isEqual(to: CommentingValueProposition.stub)
@@ -246,15 +242,16 @@ final class ValuePropositionTests: XCTestCase {
                              language: language)
     }
     
-    private func testValueProposition(_ valueProposition: ValueProposition<some TentaclesAttributes>,
-                                      for actions: [ValuePropositionAction],
-                                      with expectedResults: [ExpectedResult],
-                                      videoName: String,
-                                      language: String)
+    private func testValueProposition(
+        _ valueProposition: ValueProposition<some TentaclesAttributes>,
+        for actions: [ValuePropositionAction],
+        with expectedResults: [ExpectedResult],
+        videoName: String,
+        language: String)
     -> [Swift.Result<RawAnalyticsEvent, Error>] {
         var results = [Swift.Result<RawAnalyticsEvent, Error>]()
         let expectation = expectation(description: "numberOfExpectedResults")
-        resultsSubscription = reporterStub.resultPublisher.sink { result in
+        resultsSubscription = reporterStub.analyticsEventPublisher.sink { result in
             results.append(result)
             if results.count == actions.count {
                 expectation.fulfill()

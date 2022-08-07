@@ -88,7 +88,7 @@ class ValuePropositionSessionManager {
     }
     
     private func getFirstIndexSimilarValueProposition(as valueProposition: RawValueProposition) -> Int? {
-        sessions.firstIndex { valueProposition.isEqual(to: $0.valueProposition) }
+        sessions.firstIndex { $0.valueProposition == valueProposition }
     }
     
     private func makeStatus(from session: ValuePropositionSession,

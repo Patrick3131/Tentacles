@@ -7,14 +7,14 @@
 
 import Foundation
 
-/// Event reported to ``AnalyticsReporter`.
-public struct RawAnalyticsEvent {
+/// Event reported to ``AnalyticsReporter``.
+public struct RawAnalyticsEvent: Equatable {
     enum Error: Swift.Error {
         case keyNotAvailable
         case attributeValueWrongType
     }
     /// The name of the event being reported.
-    public let name: String
+    public var name: String
     /// Containing all additional attributes that are reported.
     public var attributes: AttributesValue
 }
@@ -72,8 +72,11 @@ public extension RawAnalyticsEvent {
     /// - Parameters:
     ///     -  dic: A dictionary of type AnyHashable
     ///     - key: Key used in dic
+    ///
     /// - Returns:
     ///     Value of type T
+    /// - Throws: Error.attributeValueWrongType: when the value can not be casted to T.
+    /// Error.keyNotAvailable: when the key is not available in the attributes.
     func getValue<T>(in dic: AnyHashable,
                      for key: String) throws -> T {
         let dic: [String: AnyHashable] = try downcast(dic)
@@ -83,6 +86,10 @@ public extension RawAnalyticsEvent {
         return try downcast(value)
     }
     
+    /// Downcasts an AnyHashable to concrete type T.
+    ///
+    ///  - Throws: Error.attributeValueWrongType, when the value can not
+    ///  be casted to T.
     func downcast<T>(_ value: AnyHashable) throws -> T {
         guard let typedValue = value as? T else {
             throw Error.attributeValueWrongType

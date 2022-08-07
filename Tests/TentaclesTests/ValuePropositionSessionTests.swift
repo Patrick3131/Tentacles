@@ -12,7 +12,7 @@ final class ValuePropositionSessionTests: XCTestCase {
     private var session: ValuePropositionSession!
     override func setUpWithError() throws {
         let valueProposition = ValuePropositionStub()
-        let rawValueProposition = RawValueProposition(valueProposition: valueProposition)
+        let rawValueProposition = RawValueProposition(from: valueProposition)
         session = ValuePropositionSession(
             for: rawValueProposition)
     }
@@ -31,6 +31,7 @@ final class ValuePropositionSessionTests: XCTestCase {
     }
     
     func testTimestampPreconditions() throws {
+        XCTAssertNoThrow(try getTimestamp(for: .opened))
         XCTAssertThrowsError(try getTimestamp(for: .started))
         XCTAssertThrowsError(try getTimestamp(for: .paused))
         XCTAssertThrowsError(try getTimestamp(for: .completed))
@@ -103,7 +104,7 @@ final class ValuePropositionSessionTests: XCTestCase {
         XCTAssertEqual(nestedBoolProperty, TentaclesAttributesStub.boolPropertyValue)
     }
     
-    func testMakeRawAnayticsEventWithTrigger() throws {
+    func testMakeRawAnalyticsEventWithTrigger() throws {
         let event = session.makeRawAnalyticsEvent(trigger: TentaclesEventTrigger.screenDidAppear)
         try evaluateDefaultValues(event: event, status: .opened)
     }

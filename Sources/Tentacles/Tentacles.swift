@@ -14,7 +14,7 @@ import AppKit
 import UIKit
 #endif
 
-public class Tentacles: AnalyticsRegister {
+public class Tentacles: AnalyticsRegister, UserIdentifying, AnalyticsEventTracking, NonFatalErrorReporting {
     private typealias AnalyticsUnit = (reporter: any AnalyticsReporting, middlewares: [Middleware<RawAnalyticsEvent>])
     private var analyticsUnit = [AnalyticsUnit]()
     private var middlewares = [Middleware<RawAnalyticsEvent>]()
@@ -52,6 +52,48 @@ public class Tentacles: AnalyticsRegister {
         middlewares = []
     }
     
+    public func identify(with id: String) {
+        analyticsUnit.forEach { $0.reporter.identify(with: id)}
+    }
+    
+    public func logout() {
+        analyticsUnit.forEach { $0.reporter.logout() }
+    }
+    
+    public func addUserAttributes(_ attributes: TentaclesAttributes) {
+        let attributesValue = attributes.serialiseToValue()
+        analyticsUnit.forEach { $0.reporter.addUserAttributes(attributesValue) }
+    }
+
+    public func track(_ event: AnalyticsEvent<some TentaclesAttributes>) {
+       track(RawAnalyticsEvent(analyticsEvent: event))
+    }
+
+    public func report(_ error: Error, filename: String = #file, line: Int = #line) {
+        analyticsUnit.forEach { $0.reporter.report(
+            error, filename: filename, line: line) }
+    }
+
+    public func track(_ valueProposition: ValueProposition<some  TentaclesAttributes>, with action: ValuePropositionAction) {
+        if valuePropositionSessionManager == nil,
+           valuePropositionEventsSubscription == nil {
+            valuePropositionSessionManager = .init()
+            valuePropositionEventsSubscription = valuePropositionSessionManager?
+                .eventPublisher
+                .sink(receiveValue: { [weak self] results in
+                    switch results {
+                    case .success(let event):
+                        self?.track(event)
+                    case .failure(let error):
+                        self?.report(error)
+                    }
+                })
+        }
+        let rawValueProposition = RawValueProposition(from: valueProposition)
+        valuePropositionSessionManager?.process(rawValueProposition,
+                                                with: action)
+    }
+    
     fileprivate func track(_ event: RawAnalyticsEvent) {
         var newEvent: RawAnalyticsEvent? = event
         newEvent?.attributes[KeyAttributes.sessionUUID] = identifier.id.uuidString
@@ -78,56 +120,6 @@ public class Tentacles: AnalyticsRegister {
                 reporter.report(newEvent)
             }
         }
-    }
-}
-
-extension Tentacles: UserIdentifying {
-    public func identify(with id: String) {
-        analyticsUnit.forEach { $0.reporter.identify(with: id)}
-    }
-    
-    public func logout() {
-        analyticsUnit.forEach { $0.reporter.logout() }
-    }
-    
-    public func addUserAttributes(_ attributes: TentaclesAttributes) {
-        let attributesValue = attributes.serialiseToValue()
-        analyticsUnit.forEach { $0.reporter.addUserAttributes(attributesValue) }
-    }
-}
-
-extension Tentacles: AnalyticsEventTracking {
-    public func track(_ event: AnalyticsEvent<some TentaclesAttributes>) {
-       track(RawAnalyticsEvent(analyticsEvent: event))
-    }
-}
-
-extension Tentacles: NonFatalErrorReporting {
-    public func report(_ error: Error, filename: String = #file, line: Int = #line) {
-        analyticsUnit.forEach { $0.reporter.report(
-            error, filename: filename, line: line) }
-    }
-}
-
-extension Tentacles: ValuePropositionTracking {
-    public func track(_ valueProposition: ValueProposition<some  TentaclesAttributes>, with action: ValuePropositionAction) {
-        if valuePropositionSessionManager == nil,
-           valuePropositionEventsSubscription == nil {
-            valuePropositionSessionManager = .init()
-            valuePropositionEventsSubscription = valuePropositionSessionManager?
-                .eventPublisher
-                .sink(receiveValue: { [weak self] results in
-                    switch results {
-                    case .success(let event):
-                        self?.track(event)
-                    case .failure(let error):
-                        self?.report(error)
-                    }
-                })
-        }
-        let rawValueProposition = RawValueProposition(valueProposition: valueProposition)
-        valuePropositionSessionManager?.process(rawValueProposition,
-                                                with: action)
     }
     
 #if canImport(UIKit) || canImport(AppKit)

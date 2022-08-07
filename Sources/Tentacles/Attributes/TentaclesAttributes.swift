@@ -20,7 +20,6 @@ public extension TentaclesAttributes {
         let data = try? JSONEncoder().encode(self)
         let dic = try? JSONSerialization.jsonObject(
             with: data!, options: []) as? [String: AnyHashable]
-        return dic ?? [String: AnyHashable]()
+        return dic!
     }
 }
-

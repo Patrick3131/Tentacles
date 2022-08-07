@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Ability to identify a user.
 public protocol UserIdentifying {
     associatedtype Attributes
     /// Identifies a user for tracking.

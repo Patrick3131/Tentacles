@@ -9,17 +9,19 @@ import Foundation
 
 /// Represents a raw type of ``ValueProposition`` to store internally to keep attributes for
 /// ``ValueProposition`` type safe.
-struct RawValueProposition {
+struct RawValueProposition: Equatable {
+    
+    
     let name: String
     let attributes: TentaclesAttributes
     
-    init(valueProposition: ValueProposition<some TentaclesAttributes>) {
+    init(from valueProposition: ValueProposition<some TentaclesAttributes>) {
         self.name = valueProposition.name
         self.attributes = valueProposition.attributes
     }
     
-    func isEqual(to other: RawValueProposition) -> Bool {
-        (self.name == other.name)
-        && (self.attributes.serialiseToValue() == other.attributes.serialiseToValue())
+    static func == (lhs: RawValueProposition, rhs: RawValueProposition) -> Bool {
+        (lhs.name == rhs.name)
+        && (lhs.attributes.serialiseToValue() == rhs.attributes.serialiseToValue())
     }
 }

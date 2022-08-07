@@ -23,65 +23,108 @@ final class MiddlewareTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    func testMiddlewareForSpecificReporter() throws {
-        let otherReporter = AnalyticsReporterStub()
-        evaluatePreConditionCeroEventsReported(reporterStub: reporter)
-        evaluatePreConditionCeroEventsReported(reporterStub: otherReporter)
-        
-        tentacles.register(otherReporter, with: [.capitalisedAttributeKeys])
-        tentacles.track(AnalyticsEventStub())
-        if let event = reporter.isResultEvent(index: 0) {
-            XCTAssertNotEqual(event.attributes["Category"],
-                           TentaclesEventCategory.interaction.rawValue)
-            XCTAssertNotEqual(event.attributes["Trigger"],
-                           TentaclesEventTrigger.clicked.rawValue)
-            XCTAssertNotEqual(event.attributes["Test"],
-                           123)
-        }
-        if let event = otherReporter.isResultEvent(index: 0) {
-            XCTAssertEqual(event.attributes["Category"],
-                           TentaclesEventCategory.interaction.rawValue)
-            XCTAssertEqual(event.attributes["Trigger"],
-                           TentaclesEventTrigger.clicked.rawValue)
-            XCTAssertEqual(event.attributes["Test"],
-                           123)
-        }
-        evaluateNumberOfEventsReported(1, for: reporter)
-        evaluateNumberOfEventsReported(1, for: otherReporter)
-    }
-    
     func testCapitalisedAttributeKeys() throws {
-        evaluatePreConditionCeroEventsReported(reporterStub: reporter)
-        tentacles.register(.capitalisedAttributeKeys)
-        tentacles.track(AnalyticsEventStub())
-        if let event = reporter.isResultEvent(index: 0) {
-            XCTAssertEqual(event.attributes["Category"],
-                           TentaclesEventCategory.interaction.rawValue)
-            XCTAssertEqual(event.attributes["Trigger"],
-                           TentaclesEventTrigger.clicked.rawValue)
-            XCTAssertEqual(event.attributes["Test"],
-                           123)
+        var event = RawAnalyticsEvent()
+        event.attributes["status"] = "status"
+        event.attributes["trigger"] = "trigger"
+        let middleware = Middleware<RawAnalyticsEvent>
+            .capitalisedAttributeKeys
+        let closureAction = middleware.closure(event)
+        switch closureAction {
+        case .forward(let event):
+            print(event)
+            XCTAssertNotNil(event.attributes.contains{ $0.key == "Status" })
+            XCTAssertNotNil(event.attributes.contains{ $0.key == "Trigger" })
+        case .skip:
+            XCTFail()
         }
-        evaluateNumberOfEventsReported(1, for: reporter)
     }
     
-    func testSkipSpecificEvent() throws {
-        evaluatePreConditionCeroEventsReported(reporterStub: reporter)
-        tentacles.register(.skipTestEvent)
-        tentacles.track(AnalyticsEventStub())
-        tentacles.track(AnalyticsEventStub(
-            category: TentaclesEventCategory.interaction,
-            trigger: TentaclesEventTrigger.clicked,
-            name: "Test2", otherAttributes: .init(key: "Key", value: 123)))
-        if let event = reporter.isResultEvent(index: 0) {
-            XCTAssertEqual(event.name, "Test2")
+    func testSkipEventForCategoryAffected() throws {
+        var event = RawAnalyticsEvent()
+        event.attributes[KeyAttributes.category] = TentaclesEventCategory
+            .valueProposition.rawValue
+        let closureAction = makeClosureSkipEventForCategory(
+            with: TentaclesEventCategory.valueProposition, event: event)
+        switch closureAction {
+        case .forward:
+            XCTFail()
+        case .skip:
+            XCTAssertTrue(true)
         }
-        evaluateNumberOfEventsReported(1, for: reporter)
     }
     
+    func testSkipEventForCategoryNotAffected() throws {
+        var event = RawAnalyticsEvent()
+        event.attributes[KeyAttributes.category] = TentaclesEventCategory
+            .screen.rawValue
+        let closureAction = makeClosureSkipEventForCategory(
+            with: TentaclesEventCategory.valueProposition, event: event)
+        switch closureAction {
+        case .forward(let _event):
+            XCTAssertEqual(event, _event)
+        case .skip:
+            XCTFail()
+        }
+    }
+    
+    func testSkipEventForCategoryCategoryNotAvailable() throws {
+        let event = RawAnalyticsEvent()
+        let closureAction = makeClosureSkipEventForCategory(
+            with: TentaclesEventCategory.valueProposition, event: event)
+        switch closureAction {
+        case .forward(let _event):
+            XCTAssertEqual(event, _event)
+        case .skip:
+            XCTFail()
+        }
+    }
+    
+    func makeClosureSkipEventForCategory(
+        with category: AnalyticsEventCategory,
+        event: RawAnalyticsEvent)
+    -> Middleware<RawAnalyticsEvent>.Action {
+        let middlewareClosure = Middleware<RawAnalyticsEvent>
+            .skipEvent(for: category).closure
+        return middlewareClosure(event)
+    }
+    
+    func testEventForNameAffected() throws {
+        let event = RawAnalyticsEvent(name: "Test")
+        let closureAction = makeClosureSkipEventForName(
+            with: ["Test"], event: event)
+        switch closureAction {
+        case.forward(_):
+            XCTFail()
+        case .skip:
+            XCTAssertTrue(true)
+        }
+    }
+    
+    func testSkipEventForNameNotAffected() throws {
+        let event = RawAnalyticsEvent(name: "OtherTest")
+        let closureAction = makeClosureSkipEventForName(
+            with: ["Test"], event: event)
+        switch closureAction {
+        case .forward(let _event):
+            XCTAssertEqual(event, _event)
+        case .skip:
+            XCTFail()
+        }
+    }
+    
+    func makeClosureSkipEventForName(with names: [String],
+                                     event: RawAnalyticsEvent)
+    -> Middleware<RawAnalyticsEvent>.Action {
+        let middlewareClosure = Middleware<RawAnalyticsEvent>
+            .skipEvent(for: names).closure
+        return middlewareClosure(event)
+    }
+        
     func testValuePropositionDurationStartedToCompletedTransformed() throws {
         let middleware = Middleware<RawAnalyticsEvent>
-            .durationValueProposition(between: .start, and: .complete)
+            .calculateValuePropositionDuration(
+                between: .start, and: .complete)
         var event = RawAnalyticsEvent()
         event.attributes[KeyAttributes.category] = TentaclesEventCategory.valueProposition.name
         event.attributes["started"] = 1234.0
@@ -99,7 +142,7 @@ final class MiddlewareTests: XCTestCase {
     
     func testValuePropositionDurationStartedToCompletedNotTransformed() throws {
         let middleware = Middleware<RawAnalyticsEvent>
-            .durationValueProposition(between: .start, and: .complete)
+            .calculateValuePropositionDuration(between: .start, and: .complete)
         let event = RawAnalyticsEvent()
         let closureAction = middleware.closure(event)
         switch closureAction {
@@ -109,11 +152,6 @@ final class MiddlewareTests: XCTestCase {
             XCTAssertNil(durationStartedCompleted)
         case .skip:
             XCTAssertTrue(false)
-            
         }
-    }
-    
-    func testSpecificMiddlewareForASpecificProvider() throws {
-        XCTAssertTrue(false)
     }
 }

@@ -30,7 +30,7 @@ public struct ValuePropositionAction {
         case cancel
         case complete
     }
-    /// Defines the status action that triggers a status update of ``ValuePropositionSession``.
+    /// Defines the status action that triggers a status update of a ``ValueProposition`` session.
     public let status: Status
     public let trigger: AnalyticsEventTrigger
     /// Attributes related to a specific status update of ``ValueProposition`` and not the the ``ValueProposition`` itself.
