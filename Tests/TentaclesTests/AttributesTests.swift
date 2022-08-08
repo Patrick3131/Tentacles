@@ -9,6 +9,11 @@ import XCTest
 @testable import Tentacles
 
 final class AttributesTests: XCTestCase {
+    private struct FailingAttribues: TentaclesAttributes {
+        func encode(to encoder: Encoder) throws {
+            throw NSError(domain: "Serialisation failed", code: 0)
+        }
+    }
     func testSerializationKeyValueAttribute() throws {
         let key = "Test", value = 123
         let keyValueAttribute = KeyValueAttribute<Int>(key: key, value: value)
@@ -21,5 +26,11 @@ final class AttributesTests: XCTestCase {
         let emptyAttributes = EmptyAttributes()
         let serialisedValue = emptyAttributes.serialiseToValue()
         XCTAssertEqual(serialisedValue, [:])
+    }
+    
+    func testSerialisationFailure() throws {
+        let failingAttributes = FailingAttribues()
+        let serialisedValue = failingAttributes.serialiseToValue()
+        XCTAssertEqual([:], serialisedValue)
     }
 }

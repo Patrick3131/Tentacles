@@ -46,10 +46,15 @@ import Foundation
 /// in case the app enters foreground again. After app **did become active** again, all previous active
 /// sessions are reset and updated with a new identifier. For all previous active sessions an open event
 /// is sent and then reset to the previous status that also triggers an event.
-public struct ValueProposition<Attributes: TentaclesAttributes> {
+public struct ValueProposition<Attributes: TentaclesAttributes>: Equatable {
     public let name: String
     /// Attributes that are relevant to the ``ValueProposition``.
     public let attributes: TentaclesAttributes
+    
+    public static func == (lhs: ValueProposition<Attributes>, rhs: ValueProposition<Attributes>) -> Bool {
+        lhs.name == rhs.name
+        && lhs.attributes.serialiseToValue() == rhs.attributes.serialiseToValue()
+    }
 }
 
 extension ValueProposition  {

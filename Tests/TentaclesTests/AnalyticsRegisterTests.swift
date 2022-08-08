@@ -14,6 +14,7 @@ final class AnalyticsRegisterTests: XCTestCase {
     private var tentacles: Tentacles!
     private var setupSub: AnyCancellable!
     private var analyticsEventSub: AnyCancellable!
+    private var eventResultsSub: AnyCancellable!
     override func setUpWithError() throws {
         reporter = AnalyticsReporterStub()
         tentacles = Tentacles()
@@ -25,6 +26,29 @@ final class AnalyticsRegisterTests: XCTestCase {
         reporter = nil
         tentacles = nil
         setupSub = nil
+    }
+    
+    func testReporterReset() throws {
+        let event = AnalyticsEventStub()
+        let didReporterResetExpectation = expectation(
+            description: "didReporterReset")
+        didReporterResetExpectation.isInverted = true
+        let oneEventReportedExpectation = expectation(
+            description: "oneEventReported")
+        var results = [Result<RawAnalyticsEvent, Error>]()
+        eventResultsSub = reporter.analyticsEventPublisher
+            .sink { result in
+                results.append(result)
+                if results.count == 1 {
+                    oneEventReportedExpectation.fulfill()
+                }
+            }
+        tentacles.track(event)
+        tentacles.reset()
+        tentacles.track(event)
+        wait(for: [didReporterResetExpectation,oneEventReportedExpectation],
+             timeout: 1)
+        XCTAssertEqual(results.count, 1)
     }
     
     func testIdentityReset() throws {

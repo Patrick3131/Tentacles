@@ -226,12 +226,6 @@ final class ValuePropositionTests: XCTestCase {
                                        expectedCount: 6)
     }
     
-    func testValuePropositionIsNotEqual() throws {
-//        let isNotEqual = WatchingVideoValueProposition.stub
-//            .isEqual(to: CommentingValueProposition.stub)
-        XCTAssertFalse(true)
-    }
-    
     private func testWatchVideoValueProposition(for actions: [ValuePropositionAction],
                                                 with expectedResults: [ExpectedResult])
     -> [Swift.Result<RawAnalyticsEvent, Error>] {

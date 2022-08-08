@@ -18,8 +18,12 @@ public protocol TentaclesAttributes: Encodable {
 public extension TentaclesAttributes {
     func serialiseToValue() -> AttributesValue {
         let data = try? JSONEncoder().encode(self)
-        let dic = try? JSONSerialization.jsonObject(
-            with: data!, options: []) as? [String: AnyHashable]
-        return dic!
+        var dic: [String: AnyHashable]?
+        if let data {
+            dic = try? JSONSerialization.jsonObject(
+                with: data, options: []) as? [String: AnyHashable]
+        }
+        
+        return dic ?? [String: AnyHashable]()
     }
 }

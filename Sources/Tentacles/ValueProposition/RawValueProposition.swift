@@ -11,7 +11,6 @@ import Foundation
 /// ``ValueProposition`` type safe.
 struct RawValueProposition: Equatable {
     
-    
     let name: String
     let attributes: TentaclesAttributes
     
