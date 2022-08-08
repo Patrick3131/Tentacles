@@ -197,11 +197,29 @@ final class ValuePropositionTests: XCTestCase {
         XCTAssertTrue(isSessionSimilar(at: 0, and: 1, results: results))
     }
     
+    func testValuePropositionsAreEqual() throws {
+        let valueProposition = ValuePropositionStub()
+        let otherValueProposition = ValuePropositionStub()
+        let isEqual = valueProposition == otherValueProposition
+        XCTAssertTrue(isEqual)
+    }
+    
+    func testValuePropositionsAreNotEqual() throws {
+        let valueProposition = ValuePropositionStub()
+        let otherValueProposition = ValuePropositionStub(name: "Other")
+        let isEqual = valueProposition == otherValueProposition
+        XCTAssertFalse(isEqual)
+    }
+    
     func testStatusTimestamps() throws {
         XCTAssertTrue(false)
     }
     
-    func testDifferentValuePropositions() throws {
+    func testOpenEventForAlreadyActiveValueProposition() throws {
+        
+    }
+    
+    func testManagingOfTwoNonEqualValuePropositions() throws {
         let otherVideoName = "Studying SwiftUI"
         let otherLanguage = "German"
         let attributes = WatchingVideoAttributes(videoName: otherVideoName,

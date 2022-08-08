@@ -51,6 +51,39 @@ final class AnalyticsRegisterTests: XCTestCase {
         XCTAssertEqual(results.count, 1)
     }
     
+    func testGeneralMiddlewareReset() throws {
+        let event = AnalyticsEventStub()
+        let expectation = expectation(description: "didGeneralMiddlewareReset")
+        var results = [Result<RawAnalyticsEvent, Error>]()
+        eventResultsSub = reporter.analyticsEventPublisher
+            .sink { result in
+                results.append(result)
+                if results.count == 2 {
+                    expectation.fulfill()
+                }
+            }
+        tentacles.register(.lowercaseEventName)
+        tentacles.track(event)
+        tentacles.reset()
+        tentacles.register(reporter)
+        tentacles.track(event)
+        wait(for: [expectation], timeout: 3)
+        switch results[0] {
+        case .success(let event):
+            let name = event.name
+            XCTAssertEqual(name, AnalyticsEventStub.eventName.lowercased())
+        case .failure:
+            XCTFail()
+        }
+        switch results[1] {
+        case .success(let event):
+            let name = event.name
+            XCTAssertEqual(name, AnalyticsEventStub.eventName)
+        case .failure:
+            XCTFail()
+        }
+    }
+    
     func testIdentityReset() throws {
         let event = AnalyticsEventStub()
         let expectation = expectation(description: "didIdentityReset")
