@@ -30,6 +30,8 @@ final class AnalyticsEventReportingTests: XCTestCase {
         otherEventResultsSub = nil
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
+    
+    
 
     func testAnalyticsEventTracking() throws {
         let event = AnalyticsEventStub()
@@ -45,10 +47,35 @@ final class AnalyticsEventReportingTests: XCTestCase {
                 }
             }
         tentacles.track(event)
-        wait(for: [expectation], timeout: 3)
+        wait(for: [expectation], timeout: 1)
         switch results[0] {
         case .success(let event):
             XCTAssertEqual(event.name, AnalyticsEventStub.eventName)
+        case .failure:
+            XCTFail()
+        }
+    }
+    
+    func testSessionUUIDAddedAsAttribute() throws {
+        let event = AnalyticsEventStub()
+        let expectation = expectation(description: "testAnalyticsEvent")
+        var results = [Result<RawAnalyticsEvent, Error>]()
+        tentacles.register(reporter)
+        eventResultsSub = reporter
+            .analyticsEventPublisher
+            .sink { result in
+                results.append(result)
+                if results.count == 1 {
+                    expectation.fulfill()
+                }
+            }
+        tentacles.track(event)
+        wait(for: [expectation], timeout: 1)
+        switch results[0] {
+        case .success(let event):
+            let uuid: String = try event.getAttributeValue(
+                for: KeyAttributes.sessionUUID)
+            XCTAssertNotNil(UUID(uuidString: uuid))
         case .failure:
             XCTFail()
         }
@@ -79,7 +106,7 @@ final class AnalyticsEventReportingTests: XCTestCase {
     }
     
     // this covers this case as well: testAnalyticsEventTrackingTwoReportersOneHasSpecificMiddleware
-    func testSkipEventForOneSpecificReporter() throws {
+    func testTwoReporterSkipEventForOneSpecificReporter() throws {
         let eventWillBeSkipped = AnalyticsEventStub()
         let skipExpectation = expectation(
             description: "skipEventForReporter")
@@ -225,9 +252,9 @@ final class AnalyticsEventReportingTests: XCTestCase {
         tentacles.track(event)
         wait(for: [analyticsEventTrackedExpectation, otherAnalyticsEventTrackedExpectation], timeout: 1)
         func evaluateEvent(_ event: RawAnalyticsEvent) throws {
-            let category: String = try event.getValueAttribute(for: KeyAttributes.category)
-            let trigger: String = try event.getValueAttribute(for: KeyAttributes.trigger)
-            let testAttribute: Int = try event.getValueAttribute(for: "test")
+            let category: String = try event.getAttributeValue(for: KeyAttributes.category)
+            let trigger: String = try event.getAttributeValue(for: KeyAttributes.trigger)
+            let testAttribute: Int = try event.getAttributeValue(for: "test")
             XCTAssertEqual(event.name, AnalyticsEventStub.eventName)
             XCTAssertEqual(category, TentaclesEventCategory.interaction.name)
             XCTAssertEqual(trigger, TentaclesEventTrigger.clicked.name)
@@ -247,11 +274,50 @@ final class AnalyticsEventReportingTests: XCTestCase {
         }
     }
     
-    func testAnalyticsEventTrackingTwoReportersOneGeneralAndOneHasSpecificMiddleware() throws {
-        
-    }
-    
-    func testAnalyticsEventTrackingTwoReportersOneGeneralAndOneHasTwoSpecificMiddlewares() throws {
-        
+    /// Name got two long: test case:
+    /// Two reporter connected
+    /// One general middleware connected
+    /// Reporter A has one specific middleware
+    /// Reporter B has two specific middlewares
+    func testAnalyticsEventTrackingTwoReportersMultipleMiddlewares() throws {
+        tentacles.register(.appendStringToName("A"))
+        tentacles.register(reporter, with: [.lowercaseEventName,
+                                            .appendStringToName("B")])
+        let otherReporter = AnalyticsReporterStub()
+        tentacles.register(otherReporter, with: [.appendStringToName("C")])
+        var results = [Result<RawAnalyticsEvent, Error>]()
+        var otherResults = [Result<RawAnalyticsEvent, Error>]()
+        let eventsReportedExpectation = expectation(
+            description: "eventsReportedExpectation")
+        let otherEventsReportedExpectation = expectation(
+            description: "otherEventsReportedExpectation")
+        eventResultsSub = reporter.analyticsEventPublisher
+            .sink { result in
+                results.append(result)
+                if results.count == 1 {
+                    eventsReportedExpectation.fulfill()
+                }
+            }
+        otherEventResultsSub = otherReporter.analyticsEventPublisher
+            .sink { result in
+                otherResults.append(result)
+                if otherResults.count == 1 {
+                    otherEventsReportedExpectation.fulfill()
+                }
+            }
+        let event = AnalyticsEventStub()
+        tentacles.track(event)
+        wait(for: [eventsReportedExpectation,
+                   otherEventsReportedExpectation], timeout: 1)
+        switch results[0] {
+        case .success(let event):
+            XCTAssertEqual(event.name, "testaB")
+        case .failure: XCTFail()
+        }
+        switch otherResults[0] {
+        case .success(let event):
+            XCTAssertEqual(event.name, "TestAC")
+        case .failure: XCTFail()
+        }
     }
 }

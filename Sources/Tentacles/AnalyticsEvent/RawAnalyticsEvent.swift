@@ -34,9 +34,10 @@ extension RawAnalyticsEvent {
 }
 
 public extension RawAnalyticsEvent {
-    func getValueAttribute<T>(for key: String) throws -> T {
+    /// Returns attribute value of key of attributes in ``RawAnalyticsEvent``.
+    func getAttributeValue<T>(for key: String) throws -> T {
         let value: AnyHashable = try getValue(in: self.attributes, for: key)
-        return try downcast(value)
+        return try RawAnalyticsEvent.downcast(value)
     }
     
     /// Used to get a value from a dic of type Anyhashable.
@@ -62,7 +63,7 @@ public extension RawAnalyticsEvent {
     /// Access:
     /**
     ```
-     let nestedProperty: [String: AnyHashable] = try event.getValueAttribute(
+     let nestedProperty: [String: AnyHashable] = try event.getAttributeValue(
          for: ExampleAttributes.Key.nestedProperty)
      let nestedStringProperty: String = try event.getValue(in: nestedProperty,
          for: ExampleAttributes.Key.stringProperty)
@@ -79,18 +80,18 @@ public extension RawAnalyticsEvent {
     /// Error.keyNotAvailable: when the key is not available in the attributes.
     func getValue<T>(in dic: AnyHashable,
                      for key: String) throws -> T {
-        let dic: [String: AnyHashable] = try downcast(dic)
+        let dic: [String: AnyHashable] = try RawAnalyticsEvent.downcast(dic)
         guard let value = dic[key] else {
             throw Error.keyNotAvailable
         }
-        return try downcast(value)
+        return try RawAnalyticsEvent.downcast(value)
     }
     
     /// Downcasts an AnyHashable to concrete type T.
     ///
     ///  - Throws: Error.attributeValueWrongType, when the value can not
     ///  be casted to T.
-    func downcast<T>(_ value: AnyHashable) throws -> T {
+    static func downcast<T>(_ value: AnyHashable) throws -> T {
         guard let typedValue = value as? T else {
             throw Error.attributeValueWrongType
         }

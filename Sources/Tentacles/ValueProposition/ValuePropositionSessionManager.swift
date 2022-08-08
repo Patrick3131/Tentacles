@@ -68,14 +68,13 @@ class ValuePropositionSessionManager {
     private func initialiseSession(for valueProposition: RawValueProposition,
                                    and action: ValuePropositionAction)
     throws -> ValuePropositionSession {
-        if action.status == .open {
-            let newSession = ValuePropositionSession(
-                for: valueProposition)
-            sessions.append(newSession)
-            return newSession
-        } else {
+        guard action.status == .open else {
             throw Error.initialActionNeedsToBeOpen
         }
+        let newSession = ValuePropositionSession(
+            for: valueProposition)
+        sessions.append(newSession)
+        return newSession
     }
     
     private func update(_ session: ValuePropositionSession, at index: Int) {
@@ -95,8 +94,6 @@ class ValuePropositionSessionManager {
                             and actionStatus: ValuePropositionAction.Status) throws
     -> ValuePropositionSession.Status {
         switch (session.status, actionStatus) {
-        case (.opened, .open):
-            return .opened
         case (.opened, .start):
             return .started
         case (.opened, .cancel), (.started, .cancel),(.paused, .cancel):

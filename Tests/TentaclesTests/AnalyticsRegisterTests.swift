@@ -105,13 +105,13 @@ final class AnalyticsRegisterTests: XCTestCase {
         var secondUUID = ""
         switch results[0] {
         case .success(let event):
-            firstUUID = try event.getValueAttribute(for: KeyAttributes.sessionUUID)
+            firstUUID = try event.getAttributeValue(for: KeyAttributes.sessionUUID)
         case .failure:
             XCTFail()
         }
         switch results[1] {
         case .success(let event):
-            secondUUID = try event.getValueAttribute(for: KeyAttributes.sessionUUID)
+            secondUUID = try event.getAttributeValue(for: KeyAttributes.sessionUUID)
         case .failure:
             XCTFail()
         }

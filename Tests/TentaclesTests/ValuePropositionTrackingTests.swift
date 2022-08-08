@@ -58,6 +58,11 @@ final class ValuePropositionTests: XCTestCase {
                                                with: [.success])
     }
     
+    func testOpenOpenEvent() throws {
+        let _ = testWatchVideoValueProposition(for: [.open(), .open()],
+                                               with: [.success, .error])
+    }
+    
     func testOpenCancelEvent() throws {
         let _ = testWatchVideoValueProposition(for: [.open(), .cancel()],
                                                with: Array(repeating: .success, count: 2))
@@ -104,8 +109,8 @@ final class ValuePropositionTests: XCTestCase {
     }
     
     func testStartEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.open()],
-                                               with: [.success])
+        let _ = testWatchVideoValueProposition(for: [.start()],
+                                               with: [.error])
     }
     
     func testStartCompleteEvents() throws {
@@ -180,9 +185,6 @@ final class ValuePropositionTests: XCTestCase {
             evaluate(event: events[3], for: .opened, trigger: .didEnterForeground)
             evaluate(event: events[4], for: .started, trigger: .didEnterForeground)
 
-            /// Check for timestamps
-            XCTAssertTrue(false)
-
             func evaluate(event: RawAnalyticsEvent, for status: EventStatus, trigger: TentaclesEventTrigger) {
                 self.evaluate(event: event, for: status, trigger: trigger, name: watchingVideovalueProposition.name,
                          videoName: videoName, language: language)
@@ -209,14 +211,6 @@ final class ValuePropositionTests: XCTestCase {
         let otherValueProposition = ValuePropositionStub(name: "Other")
         let isEqual = valueProposition == otherValueProposition
         XCTAssertFalse(isEqual)
-    }
-    
-    func testStatusTimestamps() throws {
-        XCTAssertTrue(false)
-    }
-    
-    func testOpenEventForAlreadyActiveValueProposition() throws {
-        
     }
     
     func testManagingOfTwoNonEqualValuePropositions() throws {
@@ -366,7 +360,6 @@ final class ValuePropositionTests: XCTestCase {
                           name: String,
                           videoName: String,
                           language: String) {
-        print(event.attributes)
         XCTAssertEqual(event.name, name)
         XCTAssertEqual(event.attributes["videoName"] as? String, videoName)
         XCTAssertEqual(event.attributes["language"] as? String, language)

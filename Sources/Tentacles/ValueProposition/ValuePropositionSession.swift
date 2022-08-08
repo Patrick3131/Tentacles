@@ -88,9 +88,7 @@ struct ValuePropositionSession {
     
     private func makeDefaultAttributes(
         trigger: AnalyticsEventTrigger) -> AttributesValue {
-            var attributes = AttributesValue()
-            let timestampAttributes = makeTimestampAttributes(attributes)
-            attributes.merge(timestampAttributes) { _, new in new }
+            var attributes = makeTimestampAttributes(AttributesValue())
             attributes[KeyAttributes.valuePropositionSessionUUID] = identifier.id.uuidString
             attributes[KeyAttributes.status] = status.rawValue
             attributes[KeyAttributes.trigger] = trigger.name

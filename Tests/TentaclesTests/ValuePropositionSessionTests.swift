@@ -71,20 +71,21 @@ final class ValuePropositionSessionTests: XCTestCase {
     }
     
     func testMakeRawAnalyticsEventWithAction() throws {
-        let actionAttributes = KeyValueAttribute(key: "testKey", value: 123)
+        let testKey = "testKey"
+        let testValue = 123
+        let actionAttributes = KeyValueAttribute(key: testKey, value: testValue)
         let action = ValuePropositionAction(status: .open, trigger: TentaclesEventTrigger.screenDidAppear, attributes: actionAttributes)
         let event = session.makeRawAnalyticsEvent(action: action)
         try evaluateDefaultValues(event: event, status: .opened)
-        /// values added by action
-        let stringProperty: String = try event.getValueAttribute(
+        let stringProperty: String = try event.getAttributeValue(
             for: TentaclesAttributesStub.Key.stringProperty)
-        let doubleProperty: Double = try event.getValueAttribute(
+        let doubleProperty: Double = try event.getAttributeValue(
             for: TentaclesAttributesStub.Key.doubleProperty)
-        let boolProperty: Bool = try event.getValueAttribute(
+        let boolProperty: Bool = try event.getAttributeValue(
             for: TentaclesAttributesStub.Key.boolProperty)
-        let enumProperty: String = try event.getValueAttribute(
+        let enumProperty: String = try event.getAttributeValue(
             for: TentaclesAttributesStub.Key.enumProperty)
-        let nestedProperty: [String: AnyHashable] = try event.getValueAttribute(
+        let nestedProperty: [String: AnyHashable] = try event.getAttributeValue(
             for: TentaclesAttributesStub.Key.nestedProperty)
         let nestedStringProperty: String = try event.getValue(
             in: nestedProperty,
@@ -95,6 +96,7 @@ final class ValuePropositionSessionTests: XCTestCase {
         let nestedBoolProperty: Bool = try event.getValue(
             in: nestedProperty,
             for: TentaclesAttributesStub.Key.boolProperty)
+        let actionValue: Int = try event.getAttributeValue(for: testKey)
         XCTAssertEqual(stringProperty, TentaclesAttributesStub.stringPropertyValue)
         XCTAssertEqual(doubleProperty, TentaclesAttributesStub.doublePropertyValue)
         XCTAssertEqual(boolProperty, TentaclesAttributesStub.boolPropertyValue)
@@ -102,20 +104,27 @@ final class ValuePropositionSessionTests: XCTestCase {
         XCTAssertEqual(nestedStringProperty, TentaclesAttributesStub.Nested.stringPropertyValue)
         XCTAssertEqual(nestedDoubleProperty, TentaclesAttributesStub.Nested.doublePropertyValue)
         XCTAssertEqual(nestedBoolProperty, TentaclesAttributesStub.boolPropertyValue)
+        XCTAssertEqual(actionValue, testValue)
+        /**
+         Keys that should be available for this event.
+         ["testKey", "status", "enumProperty", "stringProperty", "category", "boolProperty", "trigger", "valuePropositionSessionId", "doubleProperty", "opened", "nestedProperty"]
+         */
+        XCTAssertEqual(event.attributes.keys.count, 11)
     }
     
     func testMakeRawAnalyticsEventWithTrigger() throws {
         let event = session.makeRawAnalyticsEvent(trigger: TentaclesEventTrigger.screenDidAppear)
         try evaluateDefaultValues(event: event, status: .opened)
+        XCTAssertEqual(event.attributes.keys.count, 10)
     }
     
     func evaluateDefaultValues(event: RawAnalyticsEvent,
                                status: ValuePropositionSession.Status)
     throws {
-        let _status: String = try event.getValueAttribute(for: KeyAttributes.status)
-        let trigger: String = try event.getValueAttribute(for: KeyAttributes.trigger)
-        let category: String = try event.getValueAttribute(for: KeyAttributes.category)
-        let uuid: String = try event.getValueAttribute(for: KeyAttributes.valuePropositionSessionUUID)
+        let _status: String = try event.getAttributeValue(for: KeyAttributes.status)
+        let trigger: String = try event.getAttributeValue(for: KeyAttributes.trigger)
+        let category: String = try event.getAttributeValue(for: KeyAttributes.category)
+        let uuid: String = try event.getAttributeValue(for: KeyAttributes.valuePropositionSessionUUID)
         XCTAssertNotNil(UUID(uuidString: uuid))
         XCTAssertEqual(_status, status.rawValue)
         XCTAssertEqual(trigger, TentaclesEventTrigger.screenDidAppear.rawValue)
@@ -141,7 +150,7 @@ final class ValuePropositionSessionTests: XCTestCase {
     private func getTimestamp(for status: ValuePropositionSession.Status,
                               in event: RawAnalyticsEvent)
     throws -> Double {
-        return try event.getValueAttribute(for: status.rawValue)
+        return try event.getAttributeValue(for: status.rawValue)
     }
     
     private func getValuePropositionSessionUUID()
@@ -152,6 +161,6 @@ final class ValuePropositionSessionTests: XCTestCase {
     
     private func getValuePropositionSessionUUID(in event: RawAnalyticsEvent)
     throws -> String {
-        try event.getValueAttribute(for: KeyAttributes.valuePropositionSessionUUID)
+        try event.getAttributeValue(for: KeyAttributes.valuePropositionSessionUUID)
     }
 }

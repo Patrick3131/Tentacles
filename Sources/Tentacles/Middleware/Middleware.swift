@@ -60,12 +60,12 @@ public extension Middleware where Item == RawAnalyticsEvent {
     -> Self {
         return Self { event -> Action in
             do {
-                let category: String = try event.getValueAttribute(
+                let category: String = try event.getAttributeValue(
                     for: KeyAttributes.category)
                 if category == TentaclesEventCategory.valueProposition.rawValue {
-                    let statusValue: Double = try event.getValueAttribute(
+                    let statusValue: Double = try event.getAttributeValue(
                         for: status.derivedAttributesKey)
-                    let otherStatusValue: Double = try event.getValueAttribute(
+                    let otherStatusValue: Double = try event.getAttributeValue(
                         for: otherStatus.derivedAttributesKey)
                     var newEvent = event
                     let duration = otherStatusValue - statusValue
@@ -75,7 +75,6 @@ public extension Middleware where Item == RawAnalyticsEvent {
                 }
                 return .forward(event)
             } catch {
-                print(error.localizedDescription)
                 return .forward(event)
             }
         }
@@ -85,7 +84,7 @@ public extension Middleware where Item == RawAnalyticsEvent {
     -> Self {
         return Self { event -> Action in
             do {
-                let categoryValue: String = try event.getValueAttribute(
+                let categoryValue: String = try event.getAttributeValue(
                     for: KeyAttributes.category)
                 if categoryValue == category.name {
                     return .skip
@@ -97,6 +96,9 @@ public extension Middleware where Item == RawAnalyticsEvent {
         }
     }
     
+    /// Skips events that match a name provided with names.
+    ///
+    /// - Parameter names: Names of the event that will be skipped.
     static func skipEvent(for names: [String]) -> Self {
         return Self { event -> Action in
             names.contains(event.name) ? .skip : .forward(event)

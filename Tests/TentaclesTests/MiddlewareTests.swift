@@ -32,7 +32,6 @@ final class MiddlewareTests: XCTestCase {
         let closureAction = middleware.closure(event)
         switch closureAction {
         case .forward(let event):
-            print(event)
             XCTAssertNotNil(event.attributes.contains{ $0.key == "Status" })
             XCTAssertNotNil(event.attributes.contains{ $0.key == "Trigger" })
         case .skip:
@@ -132,7 +131,7 @@ final class MiddlewareTests: XCTestCase {
         let closureAction = middleware.closure(event)
         switch closureAction {
         case .forward(let event):
-            let durationStartedCompleted: Double = try event.getValueAttribute(
+            let durationStartedCompleted: Double = try event.getAttributeValue(
                 for: "durationStartedCompleted")
             XCTAssertEqual(durationStartedCompleted, 100)
         case .skip:
@@ -147,7 +146,7 @@ final class MiddlewareTests: XCTestCase {
         let closureAction = middleware.closure(event)
         switch closureAction {
         case.forward(let event):
-            let durationStartedCompleted: Double? = try? event.getValueAttribute(
+            let durationStartedCompleted: Double? = try? event.getAttributeValue(
                 for: "durationStartedCompleted")
             XCTAssertNil(durationStartedCompleted)
         case .skip:
