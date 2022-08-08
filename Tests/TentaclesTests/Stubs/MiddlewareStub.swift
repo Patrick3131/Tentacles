@@ -23,4 +23,13 @@ extension Middleware where Item == RawAnalyticsEvent {
         newEvent.name = newEvent.name.lowercased()
         return .forward(newEvent)
     }
+    
+    /// Appends string to event name
+    static func appendStringToName(_ string: String) -> Self {
+        return Self { event -> Action in
+            var newEvent = event
+            newEvent.name = newEvent.name + string
+            return .forward(newEvent)
+        }
+    }
 }
