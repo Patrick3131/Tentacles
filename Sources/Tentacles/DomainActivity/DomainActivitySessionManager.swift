@@ -16,11 +16,10 @@ class DomainActivitySessionManager {
                                    action: DomainActivityAction.Status)
         case selfWasNil
     }
-    private let _eventPublisher: PassthroughSubject<Result<RawAnalyticsEvent, Swift.Error>, Never> = .init()
+    private let _eventPublisher: PassthroughSubject<RawAnalyticsEvent, Never> = .init()
     lazy var eventPublisher = _eventPublisher.eraseToAnyPublisher()
     
     private var sessions = [DomainActivitySession]()
-    private let lock = NSLock()
     
     /// Processes a ``DomainActivity`` with a ``DomainActivityAction``-
     ///
@@ -38,22 +37,16 @@ class DomainActivitySessionManager {
     ///```
     /// By reaching completed or canceled the session ends and it gets deallocated.
     func process(_ domainActivity: RawDomainActivity,
-                 with action: DomainActivityAction) {
-        lock.lock()
-        do {
-            let session: DomainActivitySession
-            if let index = getFirstIndexSimilarDomainActivity(as: domainActivity) {
-                session = try processActiveSession(for: action,
-                                                   at: index)
-            } else {
-                session = try initialiseSession(for: domainActivity,
-                                                and: action)
-            }
-            publishEvent(for: session, with: action)
-        } catch {
-            publish(error)
+                 with action: DomainActivityAction) throws {
+        let session: DomainActivitySession
+        if let index = getFirstIndexSimilarDomainActivity(as: domainActivity) {
+            session = try processActiveSession(for: action,
+                                               at: index)
+        } else {
+            session = try initialiseSession(for: domainActivity,
+                                            and: action)
         }
-        lock.unlock()
+        publishEvent(for: session, with: action)
     }
     
     private func processActiveSession(for action: DomainActivityAction,
@@ -76,7 +69,7 @@ class DomainActivitySessionManager {
         sessions.append(newSession)
         return newSession
     }
-    
+
     private func update(_ session: DomainActivitySession, at index: Int) {
         switch session.status {
         case .opened, .started, .paused:
@@ -110,20 +103,14 @@ class DomainActivitySessionManager {
         }
     }
     
-    private func publish(_ error: Swift.Error) {
-        _eventPublisher.send(.failure(error))
-    }
-    
     private func publishEvent(for session: DomainActivitySession,
                               with action: DomainActivityAction) {
-        _eventPublisher.send(.success(
-            session.makeRawAnalyticsEvent(action: action)))
+        _eventPublisher.send(session.makeRawAnalyticsEvent(action: action))
     }
     
     private func publishEvent(for session: DomainActivitySession,
                               with trigger: TentaclesEventTrigger) {
-        _eventPublisher.send(.success(
-            session.makeRawAnalyticsEvent(trigger: trigger)))
+        _eventPublisher.send(session.makeRawAnalyticsEvent(trigger: trigger))
     }
     
     //MARK: Background & Foreground Applifecycle
@@ -135,7 +122,6 @@ class DomainActivitySessionManager {
     /// When the app will resign, all active sessions are canceled and cached in memory in case
     /// the app enters foreground again.
     func processWillResign() {
-        lock.lock()
         cachedSessions = sessions
         for (index, session) in sessions.enumerated() {
             var newSession = session
@@ -144,13 +130,11 @@ class DomainActivitySessionManager {
             publishEvent(for: newSession,
                          with: TentaclesEventTrigger.willResignActive)
         }
-        lock.unlock()
     }
     
     /// After app did become active again, all previous active sessions are reset and updated with a new identifier.
     /// For all previous active sessions an open event is sent and then reset to the previous status.
     func processDidBecomeActive() {
-        lock.lock()
         var newSessions = cachedSessions
         newSessions.enumerated().forEach { (index, _ ) in
             newSessions[index].reset()
@@ -163,6 +147,5 @@ class DomainActivitySessionManager {
         }
         self.sessions = newSessions
         cachedSessions = []
-        lock.unlock()
     }
 }

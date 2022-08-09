@@ -7,7 +7,8 @@
 
 import Foundation
 
-/// Describes a reason why a user would choose your app.
+/// Describes the core functionalities that should bring the most value to our users and are specific to your app
+/// and its domain.
 ///
 /// ``DomainActivity``s describe the core functionalities the user interacts with while using the app.
 /// It is of great importance and therefore should get special attention.

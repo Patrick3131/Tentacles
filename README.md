@@ -1,6 +1,6 @@
-
 # 🐙Tentacles
-Current State: ****Work in Progress**** Documentation & Tests(95,4%) started but not done yet, Implementation of first version is pretty much done
+Current State: ****Work in Progress**** Documentation & Tests(100% completed, but needs refactoring) started but not done yet, Implementation of first version is done
+
 # Welcome to Tentacles
 
 Tentacles are body parts that an animal uses to hold, grab or even feel things. That is what Tentacles is used for in terms of data collection in your application. It helps you to abstract analytics from specific providers, to structure your analytic events in a type-safe way and to collect meaningful domain-driven data with ``DomainActivity``.
@@ -8,7 +8,7 @@ Tentacles are body parts that an animal uses to hold, grab or even feel things. 
 For further information why abstracting a third party library make sense [Benoit Pasquier wrote an article](https://benoitpasquier.com/abstract-ios-third-party-libraries/).
 
 ## ✨Features
-- Abstracting analytics layer
+- Analytics layer abstraction
     - Analytics event reporting
     - Error reporting
     - Adding user attributes
@@ -124,7 +124,7 @@ Our Firebase analytics implementation does not support reporting errors, therefo
 In a case where no attributes need to be reported, ``EmptyAttributes`` must be used.
 ## Domain driven analytics
 
-When developing an app it is important to understand its domain. Yes, we want to track if a user logs in or clicks on a specific button, but what we are particular interested is how are users interacting with ``DomainActivity``s. ``DomainActivity``s are the core functionalities that should bring the most value to our users and are specific to our app and its domain. 
+When developing an app it is important to understand its domain. Yes, we want to track if a user logs in or clicks on a specific button, but what we are particular interested is how are users interacting with ``DomainActivity``s. ``DomainActivity``s are the core functionalities that should bring the most value to your users and are specific to your app and its domain. 
 
 Tentacles offers a way to connect events that are related to the same ``DomainActivity``. 
 A session (identified by UUID) is a period devoted to a particular ``DomainActivity``. The UUID identifying the session is automatically added and managed. This brings the advantage of further possibilities to analyse the data, as connections between the events can be derived. For example as Tentacles tracks every status change of a ``DomainActivity`` with a timestamp it is easily possible to calculate the duration between when the ``DomainActivity`` started and completed. 
@@ -208,14 +208,14 @@ Attributes added to events derived from ``DomainActivity``:
 - category - value: **domainActivity**
 - status - status of the ``DomainActivity`` session, possible values: 
     - **opened, started, paused, canceled, completed**
-- domainActivitySessionId - A generated random uuid, to let you search events from the same ``DomainActivity`` session.
-- with every status update of a session a timestamp of the update is logged:
+- domainActivitySessionId - A generated random uuid, to let you group events from the same ``DomainActivity`` session.
+- with every session status update a timestamp of the update is logged:
     -  i.e. opened: 123456.00, started: 1234567.00, completed: 1234354.00,
     -  if an update occurs more than once a count is added as suffix to the key:
         -  i.e. started_1, started_2
 
 ## Middleware
-``Middlewares`` are used to transform events and can be registered to a specific reporter or as a general ``Middleware`` to the ``AnalyticsRegister``. If added to a specific reporter only events reported to this reporter will be transformed. 
+``Middleware``s are used to transform events and can be registered to a specific reporter or as a general ``Middleware`` to the ``AnalyticsRegister``. If added to a specific reporter only events reported to this reporter will be transformed. 
 Use Cases:
 
 - Transforming Events
@@ -225,3 +225,5 @@ Use Cases:
 
 ### Middlewares predefined:
 - calculateDomainActivityDuration - calculates the duration between two status changes for a ``DomainActivity``. 
+- skipEvent - skips events for a specific category or names
+- capitalisedAttributeKeys - capitalises keys of attributes

@@ -33,7 +33,7 @@ public struct Middleware<Item> {
     
     /// Transforms item by applying closure to it.
     ///
-    ///- Returns: Nil if the action evaluated to skip. Otherwise the transformed item will be returned.
+    ///- Returns: Nil if the action evaluates to skip. Otherwise the transformed item will be returned.
     func transform(_ item: Item?) -> Item? {
         guard let item = item else { return nil }
         let action = closure(item)
