@@ -14,6 +14,6 @@ public enum KeyAttributes {
     public static let sessionUUID = "sessionId"
     public static let status = "status"
     public static let trigger = "trigger"
-    public static let valuePropositionSessionUUID = "valuePropositionSessionId"
+    public static let domainActivitySessionUUID = "domainActivitySessionId"
 
 }

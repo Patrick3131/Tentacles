@@ -1,5 +1,5 @@
 //
-//  ValuePropositionTests.swift
+//  DomainActivityTests.swift
 //  
 //
 //  Created by Patrick Fischer on 23.07.22.
@@ -15,7 +15,7 @@ import UIKit
 import AppKit
 #endif
 
-final class ValuePropositionTests: XCTestCase {
+final class DomainActivityTests: XCTestCase {
     private enum EventStatus: String {
         case opened
         case started
@@ -24,7 +24,7 @@ final class ValuePropositionTests: XCTestCase {
         case canceled
     }
     
-    /// Used to indicate if the state machine of ValuePropositionSessionManager is expected to return a
+    /// Used to indicate if the state machine of DomainActivitySessionManager is expected to return a
     /// successful result or an error.
     private enum ExpectedResult: Equatable {
         case success
@@ -35,7 +35,7 @@ final class ValuePropositionTests: XCTestCase {
     private let duration = 3569.0
     private let watchVideo = "watchVideo"
     private var tentacles: Tentacles!
-    private var watchingVideovalueProposition: WatchingVideoValueProposition!
+    private var watchingVideoDomainActivity: WatchingVideoDomainActivity!
     private var reporterStub: AnalyticsReporterStub!
     private var resultsSubscription: AnyCancellable?
     override func setUpWithError() throws {
@@ -43,103 +43,103 @@ final class ValuePropositionTests: XCTestCase {
         tentacles = buildTentacles(analyticsReporters: [reporterStub],
                                    errorReporters: [reporterStub])
         let attributes = WatchingVideoAttributes(videoName: videoName, language: language, duration: duration)
-        watchingVideovalueProposition = WatchingVideoValueProposition(name: watchVideo, attributes: attributes)
+        watchingVideoDomainActivity = WatchingVideoDomainActivity(name: watchVideo, attributes: attributes)
     }
     
     override func tearDownWithError() throws {
         tentacles = nil
-        watchingVideovalueProposition = nil
+        watchingVideoDomainActivity = nil
         reporterStub = nil
         resultsSubscription = nil
     }
     
     func testOpenEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.open()],
+        let _ = testWatchVideoDomainActivity(for: [.open()],
                                                with: [.success])
     }
     
     func testOpenOpenEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.open(), .open()],
+        let _ = testWatchVideoDomainActivity(for: [.open(), .open()],
                                                with: [.success, .error])
     }
     
     func testOpenCancelEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.open(), .cancel()],
+        let _ = testWatchVideoDomainActivity(for: [.open(), .cancel()],
                                                with: Array(repeating: .success, count: 2))
     }
     
     func testOpenCompleteEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.open(), .complete()],
+        let _ = testWatchVideoDomainActivity(for: [.open(), .complete()],
                                                with: [.success, .error])
     }
     
     func testOpenPauseEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.open(), .pause()],
+        let _ = testWatchVideoDomainActivity(for: [.open(), .pause()],
                                                with: [.success, .error])
     }
     
     func testOpenStartCompleteEvents() throws {
-        let _ = testWatchVideoValueProposition(for: [.open(),.start(),.complete()],
+        let _ = testWatchVideoDomainActivity(for: [.open(),.start(),.complete()],
                                                with: Array(repeating: .success, count: 3))
     }
     
     func testOpenPauseCompleteEvents() throws {
-        let _ = testWatchVideoValueProposition(for: [.open(),.pause(), .complete()],
+        let _ = testWatchVideoDomainActivity(for: [.open(),.pause(), .complete()],
                                                with: [.success, .error, .error])
     }
     
     func testOpenStartPauseStartCompleteEvents() throws {
-        let _ = testWatchVideoValueProposition(for: [.open(), .start(), .pause(), .start(), .complete()],
+        let _ = testWatchVideoDomainActivity(for: [.open(), .start(), .pause(), .start(), .complete()],
                                                with: Array(repeating: .success, count: 5))
     }
     
     func testOpenStartPauseStartPauseStartCompleteEvents() throws {
-        let _ = testWatchVideoValueProposition(for: [.open(),.start(),.pause(),.start(),.pause(),.start(),.complete()],
+        let _ = testWatchVideoDomainActivity(for: [.open(),.start(),.pause(),.start(),.pause(),.start(),.complete()],
                                                with: Array(repeating: .success, count: 7))
     }
     
     func testOpenStartPauseStartPauseStartCancelEvents() throws {
-        let _ = testWatchVideoValueProposition(for: [.open(),.start(),.pause(),.start(),.pause(),.start(),.cancel()],
+        let _ = testWatchVideoDomainActivity(for: [.open(),.start(),.pause(),.start(),.pause(),.start(),.cancel()],
                                                with: Array(repeating: .success, count: 7))
     }
     
     func testOpenStartCancelEvents() throws {
-        let _ = testWatchVideoValueProposition(for: [.open(),.start(),.cancel()],
+        let _ = testWatchVideoDomainActivity(for: [.open(),.start(),.cancel()],
                                                with: Array(repeating: .success, count: 3))
     }
     
     func testStartEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.start()],
+        let _ = testWatchVideoDomainActivity(for: [.start()],
                                                with: [.error])
     }
     
     func testStartCompleteEvents() throws {
-        let _ = testWatchVideoValueProposition(for: [.start(), .complete()],
+        let _ = testWatchVideoDomainActivity(for: [.start(), .complete()],
                                                with: Array(repeating: .error, count: 2))
     }
     
     func testStartCancelEvents() throws {
-        let _ = testWatchVideoValueProposition(for: [.start(),.cancel()],
+        let _ = testWatchVideoDomainActivity(for: [.start(),.cancel()],
                                                with: Array(repeating: .error, count: 2))
     }
     
     func testPauseEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.pause()],
+        let _ = testWatchVideoDomainActivity(for: [.pause()],
                                                with: [.error])
     }
     
     func testCancelEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.cancel()],
+        let _ = testWatchVideoDomainActivity(for: [.cancel()],
                                                with: [.error])
     }
     
     func testCompleteEvent() throws {
-        let _ = testWatchVideoValueProposition(for: [.cancel()],
+        let _ = testWatchVideoDomainActivity(for: [.cancel()],
                                                with: [.error])
     }
     
     func testDeallocationAfterCancel() throws {
-        let results = testWatchVideoValueProposition(
+        let results = testWatchVideoDomainActivity(
             for: [.open(),.cancel(),.open()],
             with: Array(repeating: .success, count: 3))
         XCTAssertTrue(isSessionSimilar(at: 0, and: 1, results: results))
@@ -147,7 +147,7 @@ final class ValuePropositionTests: XCTestCase {
     }
     
     func testDeallocationAfterComplete() throws {
-        let results = testWatchVideoValueProposition(
+        let results = testWatchVideoDomainActivity(
             for: [.open(),.start(),.complete(),.open()],
             with: Array(repeating: .success, count: 4))
         XCTAssertTrue(isSessionSimilar(at: 0, and: 2, results: results))
@@ -172,7 +172,7 @@ final class ValuePropositionTests: XCTestCase {
                     expectation.fulfill()
                 }
             }
-            trackValueProposition(for: watchingVideovalueProposition, with: [.open(),.start()])
+            trackDomainActivity(for: watchingVideoDomainActivity, with: [.open(),.start()])
             Thread.sleep(forTimeInterval: TimeInterval.random(in: 0...0.010))
             NotificationCenter.default.post(name: willResignActivePostNotification, object: nil)
             Thread.sleep(forTimeInterval: TimeInterval.random(in: 0...0.010))
@@ -186,7 +186,7 @@ final class ValuePropositionTests: XCTestCase {
             evaluate(event: events[4], for: .started, trigger: .didEnterForeground)
 
             func evaluate(event: RawAnalyticsEvent, for status: EventStatus, trigger: TentaclesEventTrigger) {
-                self.evaluate(event: event, for: status, trigger: trigger, name: watchingVideovalueProposition.name,
+                self.evaluate(event: event, for: status, trigger: trigger, name: watchingVideoDomainActivity.name,
                          videoName: videoName, language: language)
             }
         }
@@ -194,37 +194,37 @@ final class ValuePropositionTests: XCTestCase {
     
     /// events derived from the same session share the same uuid
     func testRelationBetweenEvents() throws {
-        let results = testWatchVideoValueProposition(for: [.open(), .start()],
+        let results = testWatchVideoDomainActivity(for: [.open(), .start()],
                                                      with: [.success,.success])
         XCTAssertTrue(isSessionSimilar(at: 0, and: 1, results: results))
     }
     
-    func testValuePropositionsAreEqual() throws {
-        let valueProposition = ValuePropositionStub()
-        let otherValueProposition = ValuePropositionStub()
-        let isEqual = valueProposition == otherValueProposition
+    func testDomainActivitysAreEqual() throws {
+        let domainActivity = DomainActivityStub()
+        let otherDomainActivity = DomainActivityStub()
+        let isEqual = domainActivity == otherDomainActivity
         XCTAssertTrue(isEqual)
     }
     
-    func testValuePropositionsAreNotEqual() throws {
-        let valueProposition = ValuePropositionStub()
-        let otherValueProposition = ValuePropositionStub(name: "Other")
-        let isEqual = valueProposition == otherValueProposition
+    func testDomainActivitysAreNotEqual() throws {
+        let domainActivity = DomainActivityStub()
+        let otherDomainActivity = DomainActivityStub(name: "Other")
+        let isEqual = domainActivity == otherDomainActivity
         XCTAssertFalse(isEqual)
     }
     
-    func testManagingOfTwoNonEqualValuePropositions() throws {
+    func testManagingOfTwoNonEqualDomainActivitys() throws {
         let otherVideoName = "Studying SwiftUI"
         let otherLanguage = "German"
         let attributes = WatchingVideoAttributes(videoName: otherVideoName,
                         language: otherLanguage,
                         duration: 435)
-        let otherValueProposition = WatchingVideoValueProposition(name: watchVideo, attributes: attributes)
+        let otherDomainActivity = WatchingVideoDomainActivity(name: watchVideo, attributes: attributes)
         let expectedResults: [ExpectedResult] = [.success,.success,.success]
-        let results = testWatchVideoValueProposition(for: [.open(),.start(),.complete()],
+        let results = testWatchVideoDomainActivity(for: [.open(),.start(),.complete()],
                                                      with: expectedResults)
         let otherExpectedResults: [ExpectedResult] = [.success,.success,.success]
-        let otherResults = testValueProposition(otherValueProposition,
+        let otherResults = testDomainActivity(otherDomainActivity,
                                                 for: [.open(),.start(),.complete()],
                                                 with: otherExpectedResults,
                                                 videoName: otherVideoName,
@@ -238,19 +238,19 @@ final class ValuePropositionTests: XCTestCase {
                                        expectedCount: 6)
     }
     
-    private func testWatchVideoValueProposition(for actions: [ValuePropositionAction],
+    private func testWatchVideoDomainActivity(for actions: [DomainActivityAction],
                                                 with expectedResults: [ExpectedResult])
     -> [Swift.Result<RawAnalyticsEvent, Error>] {
-        testValueProposition(watchingVideovalueProposition,
+        testDomainActivity(watchingVideoDomainActivity,
                              for: actions,
                              with: expectedResults,
                              videoName: videoName,
                              language: language)
     }
     
-    private func testValueProposition(
-        _ valueProposition: ValueProposition<some TentaclesAttributes>,
-        for actions: [ValuePropositionAction],
+    private func testDomainActivity(
+        _ domainActivity: DomainActivity<some TentaclesAttributes>,
+        for actions: [DomainActivityAction],
         with expectedResults: [ExpectedResult],
         videoName: String,
         language: String)
@@ -263,7 +263,7 @@ final class ValuePropositionTests: XCTestCase {
                 expectation.fulfill()
             }
         }
-        trackValueProposition(for: valueProposition, with: actions)
+        trackDomainActivity(for: domainActivity, with: actions)
         let statuses = actions.map { action -> EventStatus in
             switch action.status {
             case .open: return .opened
@@ -282,7 +282,7 @@ final class ValuePropositionTests: XCTestCase {
                 let status = statuses[index]
                 evaluate(event: event,
                          for: status,
-                         name: valueProposition.name,
+                         name: domainActivity.name,
                          videoName: videoName,
                          language: language)
             case .failure:
@@ -297,10 +297,10 @@ final class ValuePropositionTests: XCTestCase {
     }
     
     
-    private func trackValueProposition(for valueProposition: ValueProposition<some TentaclesAttributes>,
-                                       with actions: [ValuePropositionAction]) {
+    private func trackDomainActivity(for domainActivity: DomainActivity<some TentaclesAttributes>,
+                                       with actions: [DomainActivityAction]) {
         for action in actions {
-            tentacles.track(valueProposition, with: action)
+            tentacles.track(domainActivity, with: action)
         }
     }
     
@@ -343,8 +343,8 @@ final class ValuePropositionTests: XCTestCase {
                                   lhs: Swift.Result<RawAnalyticsEvent, Error>) -> Bool {
         switch (rhs, lhs) {
         case (.success(let event), .success(let otherEvent)):
-            return event.attributes[KeyAttributes.valuePropositionSessionUUID]
-            == otherEvent.attributes[KeyAttributes.valuePropositionSessionUUID]
+            return event.attributes[KeyAttributes.domainActivitySessionUUID]
+            == otherEvent.attributes[KeyAttributes.domainActivitySessionUUID]
         default:
             return false
         }
@@ -364,7 +364,7 @@ final class ValuePropositionTests: XCTestCase {
         XCTAssertEqual(event.attributes["videoName"] as? String, videoName)
         XCTAssertEqual(event.attributes["language"] as? String, language)
         XCTAssertEqual(event.attributes[KeyAttributes.category]
-                       as? String, TentaclesEventCategory.valueProposition.name)
+                       as? String, TentaclesEventCategory.domainActivity.name)
         XCTAssertEqual(event.attributes[KeyAttributes.trigger]
                        as? String, trigger.rawValue)
         XCTAssertEqual(event.attributes[KeyAttributes.status]

@@ -70,29 +70,29 @@ public extension Middleware where Item == RawAnalyticsEvent {
         return .forward(RawAnalyticsEvent(name: event.name, attributes: attributes))
     }
     
-    /// ``Middleware`` to calculate the duration between two status of ``ValuePropositionAction`` related to a ``ValueProposition``.
+    /// ``Middleware`` to calculate the duration between two status of ``DomainActivityAction`` related to a ``DomainActivity``.
     ///
     /// ``RawAnalyticsEvent``s that will be transformed need to be of category
-    ///  valueProposition, and need to be derived by a ``ValueProposition`` that
-    ///  has been affected by a ``ValuePropositionAction`` with both status.
+    ///  domainActivity, and need to be derived by a ``DomainActivity`` that
+    ///  has been affected by a ``DomainActivityAction`` with both status.
     ///  If successful transformed a new duration attribute with a Double will be added
     ///  to the attributes.
     ///
     /**
-     calculateValuePropositionDuration(
+     calculateDomainActivityDuration(
          between: .open,
          and: .completed)
      */
     /// In case of a successful transformation this would add a double value with **durationOpenedCompleted** as a key to the the attributes of ``RawAnalyticsEvent``.
-    static func calculateValuePropositionDuration(
-        between status: ValuePropositionAction.Status,
-        and otherStatus: ValuePropositionAction.Status)
+    static func calculateDomainActivityDuration(
+        between status: DomainActivityAction.Status,
+        and otherStatus: DomainActivityAction.Status)
     -> Self {
         return Self { event -> Action in
             do {
                 let category: String = try event.getAttributeValue(
                     for: KeyAttributes.category)
-                if category == TentaclesEventCategory.valueProposition.rawValue {
+                if category == TentaclesEventCategory.domainActivity.rawValue {
                     let statusValue: Double = try event.getAttributeValue(
                         for: status.derivedAttributesKey)
                     let otherStatusValue: Double = try event.getAttributeValue(
@@ -139,7 +139,7 @@ public extension Middleware where Item == RawAnalyticsEvent {
     }
 }
 
-fileprivate extension ValuePropositionAction.Status {
+fileprivate extension DomainActivityAction.Status {
     var derivedAttributesKey: String {
         switch self {
         case .open: return "opened"

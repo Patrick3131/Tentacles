@@ -8,7 +8,7 @@
 import Foundation
 import Tentacles
 
-typealias WatchingVideoValueProposition = ValueProposition<WatchingVideoAttributes>
+typealias WatchingVideoDomainActivity = DomainActivity<WatchingVideoAttributes>
 struct WatchingVideoAttributes: TentaclesAttributes {
     let videoName: String
     let language: String
@@ -21,9 +21,9 @@ struct WatchingVideoCompletionAttributes: TentaclesAttributes {
     let userCommented: Bool
 }
 
-typealias CommentingValueProposition = ValueProposition<KeyValueAttribute<Bool>>
+typealias CommentingDomainActivity = DomainActivity<KeyValueAttribute<Bool>>
 
-extension CommentingValueProposition {
+extension CommentingDomainActivity {
     static let stub: Self = .init(name: "commenting", attributes: .init(key: "replyToOtherComment", value: false))
 }
                                                             

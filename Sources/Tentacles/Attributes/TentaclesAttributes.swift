@@ -7,10 +7,10 @@
 
 import Foundation
 
-/// Attributes used for ``AnalyticsEvent`` and ``ValueProposition``.
+/// Attributes used for ``AnalyticsEvent`` and ``DomainActivity``.
 ///
 /// Automatically serialised to ``AttributesValue`` when ``AnalyticsEvent`` or
-///``ValueProposition`` are converted to ``RawAnalyticsEvent``.
+///``DomainActivity`` are converted to ``RawAnalyticsEvent``.
 public protocol TentaclesAttributes: Encodable {
     /// Encodes self in to AttributesValue if it fails to encode self an empty value is returned
     func serialiseToValue() -> AttributesValue

@@ -8,7 +8,7 @@
 import Foundation
 
 /// Used if no attributes are necessary for ``AnalyticsEvent``or
-/// ``ValueProposition``.
+/// ``DomainActivity``.
 public struct EmptyAttributes: TentaclesAttributes {
     public init() {}
 }

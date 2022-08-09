@@ -1,5 +1,5 @@
 //
-//  ValuePropositionTracking.swift
+//  DomainActivityTracking.swift
 //  
 //
 //  Created by Patrick Fischer on 30.07.22.
@@ -7,12 +7,12 @@
 
 import Foundation
 
-/// Ability to track a ``ValueProposition`` with a ``ValuePropositionAction``.
-public protocol ValuePropositionTracking {
-    /// Tracks a ``ValueProposition`` with a ``ValuePropositionAction``.
+/// Ability to track a ``DomainActivity`` with a ``DomainActivityAction``.
+public protocol DomainActivityTracking {
+    /// Tracks a ``DomainActivity`` with a ``DomainActivityAction``.
     ///
-    /// When a ``ValueProposition`` is tracked, a session is created and managed.
-    /// See ``ValueProposition`` documentation for further information.
-    func track(_ valueProposition: ValueProposition<some TentaclesAttributes>,
-               with action: ValuePropositionAction)
+    /// When a ``DomainActivity`` is tracked, a session is created and managed.
+    /// See ``DomainActivity`` documentation for further information.
+    func track(_ domainActivity: DomainActivity<some TentaclesAttributes>,
+               with action: DomainActivityAction)
 }

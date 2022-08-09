@@ -1,5 +1,5 @@
 //
-//  RawValuePropositionTests.swift
+//  RawDomainActivityTests.swift
 //  
 //
 //  Created by Patrick Fischer on 07.08.22.
@@ -8,44 +8,44 @@
 import XCTest
 @testable import Tentacles
 
-final class RawValuePropositionTests: XCTestCase {
-    private var rawValueProposition: RawValueProposition!
+final class RawDomainActivityTests: XCTestCase {
+    private var rawDomainActivity: RawDomainActivity!
     
     override func setUpWithError() throws {
         let attributes = TentaclesAttributesStub()
-        let valueProposition = ValuePropositionStub(
+        let domainActivity = DomainActivityStub(
             name: "Test",
             attributes: attributes)
-        self.rawValueProposition = RawValueProposition(from: valueProposition)
+        self.rawDomainActivity = RawDomainActivity(from: domainActivity)
     }
     override func tearDownWithError() throws {
-        self.rawValueProposition = nil
+        self.rawDomainActivity = nil
     }
     
-    func testRawValuePropositionsAreEqual() throws {
+    func testRawDomainActivitysAreEqual() throws {
         let otherAttributes = TentaclesAttributesStub()
-        let otherRawValueProposition = RawValueProposition(
-            from: ValuePropositionStub(
+        let otherRawDomainActivity = RawDomainActivity(
+            from: DomainActivityStub(
                 name: "Test", attributes: otherAttributes))
-        let isEqual = rawValueProposition == otherRawValueProposition
+        let isEqual = rawDomainActivity == otherRawDomainActivity
         XCTAssertTrue(isEqual)
     }
     
-    func testRawValuePropositionsAreNotEqualDifferentName() throws {
+    func testRawDomainActivitysAreNotEqualDifferentName() throws {
         let otherAttributes = TentaclesAttributesStub()
-        let otherRawValueProposition = RawValueProposition(
-            from: ValuePropositionStub(
+        let otherRawDomainActivity = RawDomainActivity(
+            from: DomainActivityStub(
                 name: "DifferentName", attributes: otherAttributes))
-        let isEqual = rawValueProposition == otherRawValueProposition
+        let isEqual = rawDomainActivity == otherRawDomainActivity
         XCTAssertFalse(isEqual)
     }
     
-    func testRawValuePropositionsAreNotEqualDifferentAttributes() throws {
+    func testRawDomainActivitysAreNotEqualDifferentAttributes() throws {
         let otherAttributes = TentaclesAttributesStub(stringProperty: "DifferentName")
-        let otherRawValueProposition = RawValueProposition(
-            from: ValuePropositionStub(
+        let otherRawDomainActivity = RawDomainActivity(
+            from: DomainActivityStub(
                 name: "Test", attributes: otherAttributes))
-        let isEqual = rawValueProposition == otherRawValueProposition
+        let isEqual = rawDomainActivity == otherRawDomainActivity
         XCTAssertFalse(isEqual)
     }
 }

@@ -1,5 +1,5 @@
 //
-//  ValuePropositionSessionTests.swift
+//  DomainActivitySessionTests.swift
 //  
 //
 //  Created by Patrick Fischer on 06.08.22.
@@ -8,13 +8,13 @@
 import XCTest
 @testable import Tentacles
 
-final class ValuePropositionSessionTests: XCTestCase {
-    private var session: ValuePropositionSession!
+final class DomainActivitySessionTests: XCTestCase {
+    private var session: DomainActivitySession!
     override func setUpWithError() throws {
-        let valueProposition = ValuePropositionStub()
-        let rawValueProposition = RawValueProposition(from: valueProposition)
-        session = ValuePropositionSession(
-            for: rawValueProposition)
+        let domainActivity = DomainActivityStub()
+        let rawDomainActivity = RawDomainActivity(from: domainActivity)
+        session = DomainActivitySession(
+            for: rawDomainActivity)
     }
 
     override func tearDownWithError() throws {
@@ -54,18 +54,18 @@ final class ValuePropositionSessionTests: XCTestCase {
     }
     
     func testUUIDAfterStatusChangeIsIdentical() throws {
-        let openedUUID = try getValuePropositionSessionUUID()
+        let openedUUID = try getDomainActivitySessionUUID()
         session.status = .started
-        let startedUUID = try getValuePropositionSessionUUID()
+        let startedUUID = try getDomainActivitySessionUUID()
         XCTAssertEqual(openedUUID, startedUUID)
     }
     
     func testReset() throws {
-        let openedUUID = try getValuePropositionSessionUUID()
+        let openedUUID = try getDomainActivitySessionUUID()
         session.status = .started
         let _ = try getTimestamp(for: .started)
         session.reset()
-        let otherOpenedUUID = try getValuePropositionSessionUUID()
+        let otherOpenedUUID = try getDomainActivitySessionUUID()
         XCTAssertNotEqual(openedUUID, otherOpenedUUID)
         XCTAssertThrowsError(try getTimestamp(for: .started))
     }
@@ -74,7 +74,7 @@ final class ValuePropositionSessionTests: XCTestCase {
         let testKey = "testKey"
         let testValue = 123
         let actionAttributes = KeyValueAttribute(key: testKey, value: testValue)
-        let action = ValuePropositionAction(status: .open, trigger: TentaclesEventTrigger.screenDidAppear, attributes: actionAttributes)
+        let action = DomainActivityAction(status: .open, trigger: TentaclesEventTrigger.screenDidAppear, attributes: actionAttributes)
         let event = session.makeRawAnalyticsEvent(action: action)
         try evaluateDefaultValues(event: event, status: .opened)
         let stringProperty: String = try event.getAttributeValue(
@@ -107,7 +107,7 @@ final class ValuePropositionSessionTests: XCTestCase {
         XCTAssertEqual(actionValue, testValue)
         /**
          Keys that should be available for this event.
-         ["testKey", "status", "enumProperty", "stringProperty", "category", "boolProperty", "trigger", "valuePropositionSessionId", "doubleProperty", "opened", "nestedProperty"]
+         ["testKey", "status", "enumProperty", "stringProperty", "category", "boolProperty", "trigger", "domainActivitySessionId", "doubleProperty", "opened", "nestedProperty"]
          */
         XCTAssertEqual(event.attributes.keys.count, 11)
     }
@@ -119,48 +119,48 @@ final class ValuePropositionSessionTests: XCTestCase {
     }
     
     func evaluateDefaultValues(event: RawAnalyticsEvent,
-                               status: ValuePropositionSession.Status)
+                               status: DomainActivitySession.Status)
     throws {
         let _status: String = try event.getAttributeValue(for: KeyAttributes.status)
         let trigger: String = try event.getAttributeValue(for: KeyAttributes.trigger)
         let category: String = try event.getAttributeValue(for: KeyAttributes.category)
-        let uuid: String = try event.getAttributeValue(for: KeyAttributes.valuePropositionSessionUUID)
+        let uuid: String = try event.getAttributeValue(for: KeyAttributes.domainActivitySessionUUID)
         XCTAssertNotNil(UUID(uuidString: uuid))
         XCTAssertEqual(_status, status.rawValue)
         XCTAssertEqual(trigger, TentaclesEventTrigger.screenDidAppear.rawValue)
-        XCTAssertEqual(category, TentaclesEventCategory.valueProposition.rawValue)
-        XCTAssertEqual(event.name, ValuePropositionStub.name)
+        XCTAssertEqual(category, TentaclesEventCategory.domainActivity.rawValue)
+        XCTAssertEqual(event.name, DomainActivityStub.name)
     }
     
     private func statusIsMoreRecent(
-        _ status: ValuePropositionSession.Status,
-        than otherStatus: ValuePropositionSession.Status)
+        _ status: DomainActivitySession.Status,
+        than otherStatus: DomainActivitySession.Status)
     throws -> Bool {
         let timestamp = try getTimestamp(for: status)
         let otherTimestamp = try getTimestamp(for: otherStatus)
         return timestamp > otherTimestamp
     }
     
-    private func getTimestamp(for status: ValuePropositionSession.Status)
+    private func getTimestamp(for status: DomainActivitySession.Status)
     throws -> Double {
         let event = session.makeRawAnalyticsEvent(action: .open())
         return try getTimestamp(for: status, in: event)
     }
     
-    private func getTimestamp(for status: ValuePropositionSession.Status,
+    private func getTimestamp(for status: DomainActivitySession.Status,
                               in event: RawAnalyticsEvent)
     throws -> Double {
         return try event.getAttributeValue(for: status.rawValue)
     }
     
-    private func getValuePropositionSessionUUID()
+    private func getDomainActivitySessionUUID()
     throws -> String {
         let event = session.makeRawAnalyticsEvent(action: .open())
-        return try getValuePropositionSessionUUID(in: event)
+        return try getDomainActivitySessionUUID(in: event)
     }
     
-    private func getValuePropositionSessionUUID(in event: RawAnalyticsEvent)
+    private func getDomainActivitySessionUUID(in event: RawAnalyticsEvent)
     throws -> String {
-        try event.getAttributeValue(for: KeyAttributes.valuePropositionSessionUUID)
+        try event.getAttributeValue(for: KeyAttributes.domainActivitySessionUUID)
     }
 }

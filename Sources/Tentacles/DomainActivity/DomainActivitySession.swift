@@ -1,5 +1,5 @@
 //
-//  ValuePropositionSession.swift
+//  DomainActivitySession.swift
 //
 //
 //  Created by Patrick Fischer on 22.07.22.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ValuePropositionSession {
+struct DomainActivitySession {
     /// Possible status
     enum Status: String, Encodable {
         case opened
@@ -19,7 +19,7 @@ struct ValuePropositionSession {
     
     private var statusTimestamps = [Status: [Double]]()
     private(set) var identifier = SessionIdentifier()
-    let valueProposition: RawValueProposition
+    let domainActivity: RawDomainActivity
     var status: Status {
         didSet {
             addTimestamp(for: status)
@@ -27,8 +27,8 @@ struct ValuePropositionSession {
     }
     
     /// When first created the status is set to opened.
-    init(for valueProposition: RawValueProposition) {
-        self.valueProposition = valueProposition
+    init(for domainActivity: RawDomainActivity) {
+        self.domainActivity = domainActivity
         self.status = .opened
         addTimestamp(for: status)
     }
@@ -39,15 +39,15 @@ struct ValuePropositionSession {
         statusTimestamps = [:]
     }
     
-    func makeRawAnalyticsEvent(action: ValuePropositionAction) -> RawAnalyticsEvent {
+    func makeRawAnalyticsEvent(action: DomainActivityAction) -> RawAnalyticsEvent {
         var attributes = makeDefaultAttributes(trigger: action.trigger)
         attributes = combine(attributes, with: action.attributes)
-        return RawAnalyticsEvent(name: valueProposition.name, attributes: attributes)
+        return RawAnalyticsEvent(name: domainActivity.name, attributes: attributes)
     }
     
     func makeRawAnalyticsEvent(trigger: AnalyticsEventTrigger) -> RawAnalyticsEvent {
         let attributes = makeDefaultAttributes(trigger: trigger)
-        return RawAnalyticsEvent(name: valueProposition.name,
+        return RawAnalyticsEvent(name: domainActivity.name,
                                  attributes: attributes)
     }
     
@@ -89,11 +89,11 @@ struct ValuePropositionSession {
     private func makeDefaultAttributes(
         trigger: AnalyticsEventTrigger) -> AttributesValue {
             var attributes = makeTimestampAttributes(AttributesValue())
-            attributes[KeyAttributes.valuePropositionSessionUUID] = identifier.id.uuidString
+            attributes[KeyAttributes.domainActivitySessionUUID] = identifier.id.uuidString
             attributes[KeyAttributes.status] = status.rawValue
             attributes[KeyAttributes.trigger] = trigger.name
-            attributes[KeyAttributes.category] = TentaclesEventCategory.valueProposition.name
-            attributes = combine(attributes, with: valueProposition.attributes)
+            attributes[KeyAttributes.category] = TentaclesEventCategory.domainActivity.name
+            attributes = combine(attributes, with: domainActivity.attributes)
             return attributes
         }
 }

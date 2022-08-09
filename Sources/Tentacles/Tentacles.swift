@@ -15,7 +15,7 @@ import UIKit
 #endif
 
 /// Tentacles provides methods for registering ``AnalyticsReporting``services,
-///  tracking ``AnalyticsEvent``s, ``ValueProposition``s and non-fatal errors, identifying the user at
+///  tracking ``AnalyticsEvent``s, ``DomainActivity``s and non-fatal errors, identifying the user at
 ///  ``AnalyticsReporting``services and setting user attributes.
 ///
 /// For documentation check out the Protocols and the top level README.
@@ -23,8 +23,8 @@ public class Tentacles: AnalyticsRegister, UserIdentifying, AnalyticsEventTracki
     private typealias AnalyticsUnit = (reporter: any AnalyticsReporting, middlewares: [Middleware<RawAnalyticsEvent>])
     private var analyticsUnit = [AnalyticsUnit]()
     private var middlewares = [Middleware<RawAnalyticsEvent>]()
-    private var valuePropositionSessionManager: ValuePropositionSessionManager?
-    private var valuePropositionEventsSubscription: AnyCancellable?
+    private var domainActivitySessionManager: DomainActivitySessionManager?
+    private var domainActivityEventsSubscription: AnyCancellable?
     
     private var identifier = SessionIdentifier()
     
@@ -82,11 +82,11 @@ public class Tentacles: AnalyticsRegister, UserIdentifying, AnalyticsEventTracki
             error, filename: filename, line: line) }
     }
 
-    public func track(_ valueProposition: ValueProposition<some  TentaclesAttributes>, with action: ValuePropositionAction) {
-        if valuePropositionSessionManager == nil,
-           valuePropositionEventsSubscription == nil {
-            valuePropositionSessionManager = .init()
-            valuePropositionEventsSubscription = valuePropositionSessionManager?
+    public func track(_ domainActivity: DomainActivity<some  TentaclesAttributes>, with action: DomainActivityAction) {
+        if domainActivitySessionManager == nil,
+           domainActivityEventsSubscription == nil {
+            domainActivitySessionManager = .init()
+            domainActivityEventsSubscription = domainActivitySessionManager?
                 .eventPublisher
                 .sink(receiveValue: { [weak self] results in
                     switch results {
@@ -97,8 +97,8 @@ public class Tentacles: AnalyticsRegister, UserIdentifying, AnalyticsEventTracki
                     }
                 })
         }
-        let rawValueProposition = RawValueProposition(from: valueProposition)
-        valuePropositionSessionManager?.process(rawValueProposition,
+        let rawDomainActivity = RawDomainActivity(from: domainActivity)
+        domainActivitySessionManager?.process(rawDomainActivity,
                                                 with: action)
     }
     
@@ -126,13 +126,13 @@ public class Tentacles: AnalyticsRegister, UserIdentifying, AnalyticsEventTracki
         willResignActiveSubscription = notificationCenter
             .publisher(for: willResignActiveNotification)
             .sink { [weak self] _ in
-                self?.valuePropositionSessionManager?.processWillResign()
+                self?.domainActivitySessionManager?.processWillResign()
             }
         didBecomeActiveSubscription = notificationCenter
             .publisher(for: didBecomeActiveNotification)
             .sink { [weak self] _ in
                 self?.identifier.reset()
-                self?.valuePropositionSessionManager?.processDidBecomeActive()
+                self?.domainActivitySessionManager?.processDidBecomeActive()
             }
     }
 #endif

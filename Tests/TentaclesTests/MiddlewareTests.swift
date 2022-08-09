@@ -42,9 +42,9 @@ final class MiddlewareTests: XCTestCase {
     func testSkipEventForCategoryAffected() throws {
         var event = RawAnalyticsEvent()
         event.attributes[KeyAttributes.category] = TentaclesEventCategory
-            .valueProposition.rawValue
+            .domainActivity.rawValue
         let transformedEvent = applySkipEventMiddlewareForCategory(
-            with: TentaclesEventCategory.valueProposition, event: event)
+            with: TentaclesEventCategory.domainActivity, event: event)
         switch transformedEvent {
         case .some:
             XCTFail()
@@ -58,7 +58,7 @@ final class MiddlewareTests: XCTestCase {
         event.attributes[KeyAttributes.category] = TentaclesEventCategory
             .screen.rawValue
         let transformedEvent = applySkipEventMiddlewareForCategory(
-            with: TentaclesEventCategory.valueProposition, event: event)
+            with: TentaclesEventCategory.domainActivity, event: event)
         switch transformedEvent {
         case .some(let _event):
             XCTAssertEqual(event, _event)
@@ -70,7 +70,7 @@ final class MiddlewareTests: XCTestCase {
     func testSkipEventForCategoryCategoryNotAvailable() throws {
         let event = RawAnalyticsEvent()
         let transformedEvent = applySkipEventMiddlewareForCategory(
-            with: TentaclesEventCategory.valueProposition, event: event)
+            with: TentaclesEventCategory.domainActivity, event: event)
         switch transformedEvent {
         case .some(let _event):
             XCTAssertEqual(event, _event)
@@ -119,12 +119,12 @@ final class MiddlewareTests: XCTestCase {
             .skipEvent(for: names).transform(event)
     }
     
-    func testValuePropositionDurationStartedToCompletedTransformed() throws {
+    func testDomainActivityDurationStartedToCompletedTransformed() throws {
         let middleware = Middleware<RawAnalyticsEvent>
-            .calculateValuePropositionDuration(
+            .calculateDomainActivityDuration(
                 between: .start, and: .complete)
         var event = RawAnalyticsEvent()
-        event.attributes[KeyAttributes.category] = TentaclesEventCategory.valueProposition.name
+        event.attributes[KeyAttributes.category] = TentaclesEventCategory.domainActivity.name
         event.attributes["started"] = 1234.0
         event.attributes["completed"] = 1334.0
         let transformedEvent = middleware.transform(event)
@@ -138,9 +138,9 @@ final class MiddlewareTests: XCTestCase {
         }
     }
     
-    func testValuePropositionDurationStartedToCompletedNotTransformed() throws {
+    func testDomainActivityDurationStartedToCompletedNotTransformed() throws {
         let middleware = Middleware<RawAnalyticsEvent>
-            .calculateValuePropositionDuration(between: .start, and: .complete)
+            .calculateDomainActivityDuration(between: .start, and: .complete)
         let event = RawAnalyticsEvent()
         let transformedEvent = middleware.transform(event)
         switch transformedEvent {

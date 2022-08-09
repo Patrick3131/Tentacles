@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Initiator that triggers an ``ValuePropositionAction`` or ``AnalyticsEvent``,
+/// Initiator that triggers an ``DomainActivityAction`` or ``AnalyticsEvent``,
 /// a trigger could be i.e. if the user clicks on a button or visits a screen.
 ///
 /// ``TentaclesEventTrigger`` implementation offers default cases.

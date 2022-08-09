@@ -7,9 +7,9 @@
 
 import Foundation
 
-/// Action to trigger an update of a ``ValueProposition`` session.
-public struct ValuePropositionAction {
-    /// Possible status updates for a ``ValueProposition`` session.
+/// Action to trigger an update of a ``DomainActivity`` session.
+public struct DomainActivityAction {
+    /// Possible status updates for a ``DomainActivity`` session.
     ///
     /// Status changes that are allowed:
     ///
@@ -30,12 +30,12 @@ public struct ValuePropositionAction {
         case cancel
         case complete
     }
-    /// Defines the status action that triggers a status update of a ``ValueProposition`` session.
+    /// Defines the status action that triggers a status update of a ``DomainActivity`` session.
     public let status: Status
     public let trigger: AnalyticsEventTrigger
-    /// Attributes related to a specific status update of ``ValueProposition`` and not the the ``ValueProposition`` itself.
+    /// Attributes related to a specific status update of ``DomainActivity`` and not the the ``DomainActivity`` itself.
     ///
-    /// Attributes are mapped to the attributes of ``RawAnalyticsEvent``, when ``RawAnalyticsEvent`` is derived from ``ValueProposition``.
+    /// Attributes are mapped to the attributes of ``RawAnalyticsEvent``, when ``RawAnalyticsEvent`` is derived from ``DomainActivity``.
     public let attributes: TentaclesAttributes?
     
     public init(status: Status,
@@ -47,7 +47,7 @@ public struct ValuePropositionAction {
     }
 }
 
-public extension ValuePropositionAction {
+public extension DomainActivityAction {
     static func open(trigger: AnalyticsEventTrigger = TentaclesEventTrigger.clicked,
                      attributes: TentaclesAttributes? = nil) -> Self {
         Self.init(status: .open,

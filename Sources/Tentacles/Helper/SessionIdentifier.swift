@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// Entity to manage an identity of a session, used in ``Tentacles`` and ``ValuePropositionSession``.
+/// Entity to manage an identity of a session, used in ``Tentacles`` and ``DomainActivitySession``.
 struct SessionIdentifier: Identifiable {
     private(set) var id: UUID = UUID()
     

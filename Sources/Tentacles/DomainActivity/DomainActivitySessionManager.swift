@@ -8,23 +8,23 @@
 import Foundation
 import Combine
 
-/// Manages sessions of ``ValueProposition``s.
-class ValuePropositionSessionManager {
+/// Manages sessions of ``DomainActivity``s.
+class DomainActivitySessionManager {
     enum Error: Swift.Error {
         case initialActionNeedsToBeOpen
-        case prohibitedStateUpdate(session: ValuePropositionSession,
-                                   action: ValuePropositionAction.Status)
+        case prohibitedStateUpdate(session: DomainActivitySession,
+                                   action: DomainActivityAction.Status)
         case selfWasNil
     }
     private let _eventPublisher: PassthroughSubject<Result<RawAnalyticsEvent, Swift.Error>, Never> = .init()
     lazy var eventPublisher = _eventPublisher.eraseToAnyPublisher()
     
-    private var sessions = [ValuePropositionSession]()
+    private var sessions = [DomainActivitySession]()
     private let lock = NSLock()
     
-    /// Processes a ``ValueProposition`` with a ``ValuePropositionAction``-
+    /// Processes a ``DomainActivity`` with a ``DomainActivityAction``-
     ///
-    /// When a ``ValueProposition`` is tracked with an ``ValuePropositionAction``, the status of the session is
+    /// When a ``DomainActivity`` is tracked with an ``DomainActivityAction``, the status of the session is
     /// updated and a ``RawAnalyticsEvent`` generated and forwarded. Status changes that are allowed:
     ///
     ///```mermaid
@@ -37,16 +37,16 @@ class ValuePropositionSessionManager {
     /// Pause --> Cancel
     ///```
     /// By reaching completed or canceled the session ends and it gets deallocated.
-    func process(_ valueProposition: RawValueProposition,
-                 with action: ValuePropositionAction) {
+    func process(_ domainActivity: RawDomainActivity,
+                 with action: DomainActivityAction) {
         lock.lock()
         do {
-            let session: ValuePropositionSession
-            if let index = getFirstIndexSimilarValueProposition(as: valueProposition) {
+            let session: DomainActivitySession
+            if let index = getFirstIndexSimilarDomainActivity(as: domainActivity) {
                 session = try processActiveSession(for: action,
                                                    at: index)
             } else {
-                session = try initialiseSession(for: valueProposition,
+                session = try initialiseSession(for: domainActivity,
                                                 and: action)
             }
             publishEvent(for: session, with: action)
@@ -56,8 +56,8 @@ class ValuePropositionSessionManager {
         lock.unlock()
     }
     
-    private func processActiveSession(for action: ValuePropositionAction,
-                                      at index: Int) throws -> ValuePropositionSession {
+    private func processActiveSession(for action: DomainActivityAction,
+                                      at index: Int) throws -> DomainActivitySession {
         var session = sessions[index]
         let newStatus = try makeStatus(from: session, and: action.status)
         session.status = newStatus
@@ -65,19 +65,19 @@ class ValuePropositionSessionManager {
         return session
     }
     
-    private func initialiseSession(for valueProposition: RawValueProposition,
-                                   and action: ValuePropositionAction)
-    throws -> ValuePropositionSession {
+    private func initialiseSession(for domainActivity: RawDomainActivity,
+                                   and action: DomainActivityAction)
+    throws -> DomainActivitySession {
         guard action.status == .open else {
             throw Error.initialActionNeedsToBeOpen
         }
-        let newSession = ValuePropositionSession(
-            for: valueProposition)
+        let newSession = DomainActivitySession(
+            for: domainActivity)
         sessions.append(newSession)
         return newSession
     }
     
-    private func update(_ session: ValuePropositionSession, at index: Int) {
+    private func update(_ session: DomainActivitySession, at index: Int) {
         switch session.status {
         case .opened, .started, .paused:
             sessions[index] = session
@@ -86,13 +86,13 @@ class ValuePropositionSessionManager {
         }
     }
     
-    private func getFirstIndexSimilarValueProposition(as valueProposition: RawValueProposition) -> Int? {
-        sessions.firstIndex { $0.valueProposition == valueProposition }
+    private func getFirstIndexSimilarDomainActivity(as domainActivity: RawDomainActivity) -> Int? {
+        sessions.firstIndex { $0.domainActivity == domainActivity }
     }
     
-    private func makeStatus(from session: ValuePropositionSession,
-                            and actionStatus: ValuePropositionAction.Status) throws
-    -> ValuePropositionSession.Status {
+    private func makeStatus(from session: DomainActivitySession,
+                            and actionStatus: DomainActivityAction.Status) throws
+    -> DomainActivitySession.Status {
         switch (session.status, actionStatus) {
         case (.opened, .start):
             return .started
@@ -114,13 +114,13 @@ class ValuePropositionSessionManager {
         _eventPublisher.send(.failure(error))
     }
     
-    private func publishEvent(for session: ValuePropositionSession,
-                              with action: ValuePropositionAction) {
+    private func publishEvent(for session: DomainActivitySession,
+                              with action: DomainActivityAction) {
         _eventPublisher.send(.success(
             session.makeRawAnalyticsEvent(action: action)))
     }
     
-    private func publishEvent(for session: ValuePropositionSession,
+    private func publishEvent(for session: DomainActivitySession,
                               with trigger: TentaclesEventTrigger) {
         _eventPublisher.send(.success(
             session.makeRawAnalyticsEvent(trigger: trigger)))
@@ -130,7 +130,7 @@ class ValuePropositionSessionManager {
     
     /// Sessions before app went in to background, will be used to reset sessions in case
     /// app enters foreground again.
-    private var cachedSessions = [ValuePropositionSession]()
+    private var cachedSessions = [DomainActivitySession]()
     
     /// When the app will resign, all active sessions are canceled and cached in memory in case
     /// the app enters foreground again.
