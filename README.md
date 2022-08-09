@@ -17,8 +17,6 @@ For further information why abstracting a third party library make sense [Benoit
 - ``Middleware`` to transform/ignore events for reporters
 
 
-
-
 ## Analytics setup
 Tentacles registers and manages ``AnalyticsReporter`` in a central entity. If we want to use a service like Firebase we need to great an implementation that conforms to ``AnalyticsReporting``:
 
@@ -126,14 +124,12 @@ Our Firebase analytics implementation does not support reporting errors, therefo
 In a case where no attributes need to be reported, ``EmptyAttributes`` must be used.
 ## Domain driven analytics
 
-When developing an app it is important to understand its domain. Yes, we want to track if a user logs in or clicks on a specific button, but what we are particular interested is how are users interacting with the core functionalities, the functionalities that should bring the most value to our users. 
+When developing an app it is important to understand its domain. Yes, we want to track if a user logs in or clicks on a specific button, but what we are particular interested is how are users interacting with ``DomainActivity``s. ``DomainActivity``s are the core functionalities that should bring the most value to our users and are specific to our app and its domain. 
 
-[Value proposition](https://en.wikipedia.org/wiki/Value_proposition) is a term borrowed out of marketing and describes the reason why a customer would choose your product. Applying it to an application, it is the reason why a user would choose to use your app. As data related to the value proposition is especially important, Tentacles offers a way to connect events that are related to the same value proposition session. 
-
+Tentacles offers a way to connect events that are related to the same ``DomainActivity``. 
 A session (identified by UUID) is a period devoted to a particular ``DomainActivity``. The UUID identifying the session is automatically added and managed. This brings the advantage of further possibilities to analyse the data, as connections between the events can be derived. For example as Tentacles tracks every status change of a ``DomainActivity`` with a timestamp it is easily possible to calculate the duration between when the ``DomainActivity`` started and completed. 
  
-Lets use Youtube as an example, lets simplify and say their value proposition is offering engaging content, in particular videos.
-To measure this, watching videos is analysed. The user experience of watching a video usually involves these steps:
+Lets use Youtube as an example, one of their ``DomainActivity``s a user can do on their platform is watching videos. The user experience of watching a video usually involves these steps:
 ```mermaid
 graph LR
 A(Open Video Page) --> B(Start Video)
@@ -142,7 +138,7 @@ B --> D(Complete Video)
 B --> E(Cancel Video)
 C --> B
 ```
-These steps are the possible status of a session related to a value proposition activity. When a ``DomainActivity`` is tracked with an ``DomainActivityAction``, the status of the session is updated and a event forwarded. Status changes that are allowed:
+These steps are the possible status of a session related to a ``DomainActivity``. When a ``DomainActivity`` is tracked with an ``DomainActivityAction``, the status of the session is updated and an event forwarded. Status changes that are allowed:
 
 ```mermaid
 graph LR
