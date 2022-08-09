@@ -29,12 +29,12 @@ final class MiddlewareTests: XCTestCase {
         event.attributes["trigger"] = "trigger"
         let middleware = Middleware<RawAnalyticsEvent>
             .capitalisedAttributeKeys
-        let closureAction = middleware.closure(event)
-        switch closureAction {
-        case .forward(let event):
+        let transformedEvent = middleware.transform(event)
+        switch transformedEvent {
+        case .some(let event):
             XCTAssertNotNil(event.attributes.contains{ $0.key == "Status" })
             XCTAssertNotNil(event.attributes.contains{ $0.key == "Trigger" })
-        case .skip:
+        case .none:
             XCTFail()
         }
     }
@@ -43,12 +43,12 @@ final class MiddlewareTests: XCTestCase {
         var event = RawAnalyticsEvent()
         event.attributes[KeyAttributes.category] = TentaclesEventCategory
             .valueProposition.rawValue
-        let closureAction = makeClosureSkipEventForCategory(
+        let transformedEvent = applySkipEventMiddlewareForCategory(
             with: TentaclesEventCategory.valueProposition, event: event)
-        switch closureAction {
-        case .forward:
+        switch transformedEvent {
+        case .some:
             XCTFail()
-        case .skip:
+        case .none:
             XCTAssertTrue(true)
         }
     }
@@ -57,69 +57,68 @@ final class MiddlewareTests: XCTestCase {
         var event = RawAnalyticsEvent()
         event.attributes[KeyAttributes.category] = TentaclesEventCategory
             .screen.rawValue
-        let closureAction = makeClosureSkipEventForCategory(
+        let transformedEvent = applySkipEventMiddlewareForCategory(
             with: TentaclesEventCategory.valueProposition, event: event)
-        switch closureAction {
-        case .forward(let _event):
+        switch transformedEvent {
+        case .some(let _event):
             XCTAssertEqual(event, _event)
-        case .skip:
+        case .none:
             XCTFail()
         }
     }
     
     func testSkipEventForCategoryCategoryNotAvailable() throws {
         let event = RawAnalyticsEvent()
-        let closureAction = makeClosureSkipEventForCategory(
+        let transformedEvent = applySkipEventMiddlewareForCategory(
             with: TentaclesEventCategory.valueProposition, event: event)
-        switch closureAction {
-        case .forward(let _event):
+        switch transformedEvent {
+        case .some(let _event):
             XCTAssertEqual(event, _event)
-        case .skip:
+        case .none:
             XCTFail()
         }
     }
     
-    func makeClosureSkipEventForCategory(
+    func applySkipEventMiddlewareForCategory(
         with category: AnalyticsEventCategory,
         event: RawAnalyticsEvent)
-    -> Middleware<RawAnalyticsEvent>.Action {
-        let middlewareClosure = Middleware<RawAnalyticsEvent>
-            .skipEvent(for: category).closure
-        return middlewareClosure(event)
+    -> RawAnalyticsEvent? {
+        return Middleware<RawAnalyticsEvent>
+            .skipEvent(for: category)
+            .transform(event)
     }
     
     func testEventForNameAffected() throws {
         let event = RawAnalyticsEvent(name: "Test")
-        let closureAction = makeClosureSkipEventForName(
+        let transformedEvent = applySkipEventForNameMiddleware(
             with: ["Test"], event: event)
-        switch closureAction {
-        case.forward(_):
+        switch transformedEvent {
+        case.some:
             XCTFail()
-        case .skip:
+        case .none:
             XCTAssertTrue(true)
         }
     }
     
     func testSkipEventForNameNotAffected() throws {
         let event = RawAnalyticsEvent(name: "OtherTest")
-        let closureAction = makeClosureSkipEventForName(
+        let transformedEvent = applySkipEventForNameMiddleware(
             with: ["Test"], event: event)
-        switch closureAction {
-        case .forward(let _event):
+        switch transformedEvent {
+        case .some(let _event):
             XCTAssertEqual(event, _event)
-        case .skip:
+        case .none:
             XCTFail()
         }
     }
     
-    func makeClosureSkipEventForName(with names: [String],
-                                     event: RawAnalyticsEvent)
-    -> Middleware<RawAnalyticsEvent>.Action {
-        let middlewareClosure = Middleware<RawAnalyticsEvent>
-            .skipEvent(for: names).closure
-        return middlewareClosure(event)
+    func applySkipEventForNameMiddleware(with names: [String],
+                                         event: RawAnalyticsEvent)
+    -> RawAnalyticsEvent? {
+        return Middleware<RawAnalyticsEvent>
+            .skipEvent(for: names).transform(event)
     }
-        
+    
     func testValuePropositionDurationStartedToCompletedTransformed() throws {
         let middleware = Middleware<RawAnalyticsEvent>
             .calculateValuePropositionDuration(
@@ -128,13 +127,13 @@ final class MiddlewareTests: XCTestCase {
         event.attributes[KeyAttributes.category] = TentaclesEventCategory.valueProposition.name
         event.attributes["started"] = 1234.0
         event.attributes["completed"] = 1334.0
-        let closureAction = middleware.closure(event)
-        switch closureAction {
-        case .forward(let event):
+        let transformedEvent = middleware.transform(event)
+        switch transformedEvent {
+        case .some(let event):
             let durationStartedCompleted: Double = try event.getAttributeValue(
                 for: "durationStartedCompleted")
             XCTAssertEqual(durationStartedCompleted, 100)
-        case .skip:
+        case .none:
             XCTAssertTrue(false)
         }
     }
@@ -143,13 +142,13 @@ final class MiddlewareTests: XCTestCase {
         let middleware = Middleware<RawAnalyticsEvent>
             .calculateValuePropositionDuration(between: .start, and: .complete)
         let event = RawAnalyticsEvent()
-        let closureAction = middleware.closure(event)
-        switch closureAction {
-        case.forward(let event):
+        let transformedEvent = middleware.transform(event)
+        switch transformedEvent {
+        case.some(let event):
             let durationStartedCompleted: Double? = try? event.getAttributeValue(
                 for: "durationStartedCompleted")
             XCTAssertNil(durationStartedCompleted)
-        case .skip:
+        case .none:
             XCTAssertTrue(false)
         }
     }

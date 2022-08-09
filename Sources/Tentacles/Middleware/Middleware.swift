@@ -15,35 +15,45 @@ public struct Middleware<Item> {
     /// Action to forward an Item or skip it.
     public enum Action {
         /// Item will be forwarded by the consumer of the ``Middleware``, usually after it has been
-        /// transformed. If the item was not transformed it still needs to be forwarded otherwise it will be
-        /// ignored.
+        /// transformed.
+        ///
+        /// If the item was not transformed it still needs to be forwarded otherwise it will be
+        /// skipped.
         case forward(Item)
         /// Item will be skipped by the consumer of the ``Middleware``.
         case skip
     }
-    let closure: (Item) -> Action
+    private let closure: (Item) -> Action
     /// Used to transform an Item, use cases range from adding data, editing or ignoring
     /// the Item.
     /// - Returns: ``Action``, if the returned value is skip then it will be ignored by the reporting
     public init(_ closure: @escaping (Item) -> Action) {
         self.closure = closure
     }
+    
+    /// Transforms item by applying closure to it.
+    ///
+    ///- Returns: Nil if the action evaluated to skip. Otherwise the transformed item will be returned.
+    func transform(_ item: Item?) -> Item? {
+        guard let item = item else { return nil }
+        let action = closure(item)
+        switch action {
+        case .forward(let item): return item
+        case .skip: return nil
+        }
+    }
 }
 
 public extension Array where Array.Element == Middleware<RawAnalyticsEvent> {
-    /// Transforms event by applying closures ``Middleware``s to it.
+    /// Transforms event by applying ``Middleware``s to it.
     ///
-    /// - Returns: Nil if the RawAnalyticsEvent needs to be skipped.
+    /// - Returns: Nil if the actions evaluated to skip.
+    /// Otherwise will returned the transformed ``RawAnalyticsEvent``.
     func transform(_ event: RawAnalyticsEvent?) -> RawAnalyticsEvent? {
         var _newEvent: RawAnalyticsEvent? = event
         self.forEach { middleware in
             if let unwrappedEvent = _newEvent {
-                switch middleware.closure(unwrappedEvent) {
-                case .forward(let event):
-                    _newEvent = event
-                case .skip:
-                    _newEvent = nil
-                }
+                _newEvent = middleware.transform(unwrappedEvent)
             }
         }
         return _newEvent
@@ -52,7 +62,7 @@ public extension Array where Array.Element == Middleware<RawAnalyticsEvent> {
 
 public extension Middleware where Item == RawAnalyticsEvent {
     /// ``Middleware`` to capitalise the keys of all attributes for a ``RawAnalyticsEvent`
-    static let capitalisedAttributeKeys: Self = Self { event -> Action in
+    static let capitalisedAttributeKeys = Self { event -> Action in
         var attributes = AttributesValue()
         event.attributes.forEach {
             attributes[$0.key.capitalized] = $0.value
@@ -100,6 +110,9 @@ public extension Middleware where Item == RawAnalyticsEvent {
         }
     }
 
+    /// Skips event that matches a category.
+    ///
+    /// - Parameter category: Category of the event that will be skipped.
     static func skipEvent(for category: AnalyticsEventCategory)
     -> Self {
         return Self { event -> Action in
@@ -116,7 +129,7 @@ public extension Middleware where Item == RawAnalyticsEvent {
         }
     }
     
-    /// Skips events that match a name provided with names.
+    /// Skips event that matches a name provided with names.
     ///
     /// - Parameter names: Names of the event that will be skipped.
     static func skipEvent(for names: [String]) -> Self {
