@@ -105,30 +105,11 @@ public class Tentacles: AnalyticsRegister, UserIdentifying, AnalyticsEventTracki
     fileprivate func track(_ event: RawAnalyticsEvent) {
         var newEvent: RawAnalyticsEvent? = event
         newEvent?.attributes[KeyAttributes.sessionUUID] = identifier.id.uuidString
-        middlewares.forEach { middleware in
-            if let _newEvent = newEvent {
-                switch middleware.closure(_newEvent) {
-                case .forward(let event):
-                    newEvent = event
-                case .skip:
-                    newEvent = nil
-                }
-            }
-        }
+        newEvent = middlewares.transform(newEvent)
         analyticsUnit.forEach { (reporter, middlewares) in
-            var _newEvent: RawAnalyticsEvent? = newEvent
-            middlewares.forEach { middleware in
-                if let unwrappedEvent = _newEvent {
-                    switch middleware.closure(unwrappedEvent) {
-                    case .forward(let event):
-                        _newEvent = event
-                    case .skip:
-                        _newEvent = nil
-                    }
-                }
-            }
-            if let _newEvent {
-                reporter.report(_newEvent)
+            let specificEvent = middlewares.transform(newEvent)
+            if let specificEvent {
+                reporter.report(specificEvent)
             }
         }
     }

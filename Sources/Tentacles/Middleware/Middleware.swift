@@ -30,6 +30,26 @@ public struct Middleware<Item> {
     }
 }
 
+public extension Array where Array.Element == Middleware<RawAnalyticsEvent> {
+    /// Transforms event by applying closures ``Middleware``s to it.
+    ///
+    /// - Returns: Nil if the RawAnalyticsEvent needs to be skipped.
+    func transform(_ event: RawAnalyticsEvent?) -> RawAnalyticsEvent? {
+        var _newEvent: RawAnalyticsEvent? = event
+        self.forEach { middleware in
+            if let unwrappedEvent = _newEvent {
+                switch middleware.closure(unwrappedEvent) {
+                case .forward(let event):
+                    _newEvent = event
+                case .skip:
+                    _newEvent = nil
+                }
+            }
+        }
+        return _newEvent
+    }
+}
+
 public extension Middleware where Item == RawAnalyticsEvent {
     /// ``Middleware`` to capitalise the keys of all attributes for a ``RawAnalyticsEvent`
     static let capitalisedAttributeKeys: Self = Self { event -> Action in
