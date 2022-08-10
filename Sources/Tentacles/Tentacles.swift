@@ -61,6 +61,7 @@ public class Tentacles: AnalyticsRegister, UserIdentifying, AnalyticsEventTracki
     
     public func reset() {
         queue.async { [weak self] in
+            self?.logout()
             self?.analyticsUnit = []
             self?.middlewares = []
             self?.domainActivitySessionManager = nil

@@ -1,5 +1,5 @@
 # 🐙Tentacles
-Current State: ****Work in Progress**** Documentation & Tests(100% completed, but needs refactoring) started but not done yet, Implementation of first version is done
+Current State: ****Work in Progress**** Documentation & Tests(100% completed, but needs refactoring and structuring) started but not done yet, implementation of first version is done. However, changes in public API possible before release.
 
 # Welcome to Tentacles
 
