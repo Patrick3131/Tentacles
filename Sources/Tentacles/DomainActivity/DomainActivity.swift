@@ -53,8 +53,10 @@ public struct DomainActivity<Attributes: TentaclesAttributes>: Equatable {
     public let attributes: TentaclesAttributes
     
     public static func == (lhs: DomainActivity<Attributes>, rhs: DomainActivity<Attributes>) -> Bool {
-        lhs.name == rhs.name
-        && lhs.attributes.serialiseToValue() == rhs.attributes.serialiseToValue()
+        let lhsAttributeValue = try? lhs.attributes.serialiseToValue()
+        let rhsAttributeValue = try? rhs.attributes.serialiseToValue()
+        return lhs.name == rhs.name
+        && lhsAttributeValue == rhsAttributeValue
     }
 }
 

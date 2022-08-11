@@ -20,12 +20,12 @@ public struct RawAnalyticsEvent: Equatable {
 }
 
 extension RawAnalyticsEvent {
-    init(analyticsEvent: AnalyticsEvent<some TentaclesAttributes>) {
+    init(analyticsEvent: AnalyticsEvent<some TentaclesAttributes>) throws {
         self.name = analyticsEvent.name
         var attributes = AttributesValue()
         attributes[KeyAttributes.trigger] = analyticsEvent.trigger.name
         attributes[KeyAttributes.category] = analyticsEvent.category.name
-        let otherAttributeValues = analyticsEvent.otherAttributes.serialiseToValue()
+        let otherAttributeValues = try analyticsEvent.otherAttributes.serialiseToValue()
         for (key, value) in otherAttributeValues {
             attributes[key] = value
         }
@@ -87,11 +87,16 @@ public extension RawAnalyticsEvent {
         return try RawAnalyticsEvent.downcast(value)
     }
     
+    func decodeValue<T>(in dic: AnyHashable,
+                        for key: String) throws -> T {
+        fatalError()
+    }
+    
     /// Downcasts an AnyHashable to concrete type T.
     ///
     ///  - Throws: Error.attributeValueWrongType, when the value can not
     ///  be casted to T.
-    static func downcast<T>(_ value: AnyHashable) throws -> T {
+    internal static func downcast<T>(_ value: AnyHashable) throws -> T {
         guard let typedValue = value as? T else {
             throw Error.attributeValueWrongType
         }

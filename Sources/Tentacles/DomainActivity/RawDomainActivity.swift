@@ -20,7 +20,9 @@ struct RawDomainActivity: Equatable {
     }
     
     static func == (lhs: RawDomainActivity, rhs: RawDomainActivity) -> Bool {
-        (lhs.name == rhs.name)
-        && (lhs.attributes.serialiseToValue() == rhs.attributes.serialiseToValue())
+        let lhsAttributeValue = try? lhs.attributes.serialiseToValue()
+        let rhsAttributeValue = try? rhs.attributes.serialiseToValue()
+        return (lhs.name == rhs.name)
+        && (lhsAttributeValue == rhsAttributeValue)
     }
 }

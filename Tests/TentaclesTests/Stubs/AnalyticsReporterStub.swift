@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Tentacles
+@testable import Tentacles
 import Combine
 
 class AnalyticsReporterStub: AnalyticsReporting {

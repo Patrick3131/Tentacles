@@ -8,7 +8,7 @@
 import Foundation
 
 struct DomainActivitySession {
-    /// Possible status
+    /// Possible status  
     enum Status: String, Encodable {
         case opened
         case started
@@ -39,23 +39,24 @@ struct DomainActivitySession {
         statusTimestamps = [:]
     }
     
-    func makeRawAnalyticsEvent(action: DomainActivityAction) -> RawAnalyticsEvent {
-        var attributes = makeDefaultAttributes(trigger: action.trigger)
-        attributes = combine(attributes, with: action.attributes)
+    func makeRawAnalyticsEvent(action: DomainActivityAction) throws -> RawAnalyticsEvent {
+        var attributes = try makeDefaultAttributes(trigger: action.trigger)
+        attributes = try combine(attributes, with: action.attributes)
         return RawAnalyticsEvent(name: domainActivity.name, attributes: attributes)
     }
     
-    func makeRawAnalyticsEvent(trigger: AnalyticsEventTrigger) -> RawAnalyticsEvent {
-        let attributes = makeDefaultAttributes(trigger: trigger)
+    func makeRawAnalyticsEvent(trigger: AnalyticsEventTrigger) throws -> RawAnalyticsEvent {
+        let attributes = try makeDefaultAttributes(trigger: trigger)
         return RawAnalyticsEvent(name: domainActivity.name,
                                  attributes: attributes)
     }
     
     private func combine(_ attributes: AttributesValue,
-                         with tentacleAttributes: (any TentaclesAttributes)?) -> AttributesValue {
+                         with tentacleAttributes: (any TentaclesAttributes)?)
+    throws -> AttributesValue {
         var newAttributes = attributes
         if let tentacleAttributes {
-            for (key, value) in tentacleAttributes.serialiseToValue() {
+            for (key, value) in try tentacleAttributes.serialiseToValue() {
                 newAttributes[key] = value
             }
         }
@@ -83,17 +84,18 @@ struct DomainActivitySession {
                 }
             }
         }
+        newAttributes["timestamp"] = Date.timeIntervalSinceReferenceDate
         return newAttributes
     }
     
     private func makeDefaultAttributes(
-        trigger: AnalyticsEventTrigger) -> AttributesValue {
+        trigger: AnalyticsEventTrigger) throws -> AttributesValue {
             var attributes = makeTimestampAttributes(AttributesValue())
             attributes[KeyAttributes.domainActivitySessionUUID] = identifier.id.uuidString
             attributes[KeyAttributes.status] = status.rawValue
             attributes[KeyAttributes.trigger] = trigger.name
             attributes[KeyAttributes.category] = TentaclesEventCategory.domainActivity.name
-            attributes = combine(attributes, with: domainActivity.attributes)
+            attributes = try combine(attributes, with: domainActivity.attributes)
             return attributes
         }
 }

@@ -46,7 +46,7 @@ final class UserIdentifyingTests: XCTestCase {
         XCTAssertEqual(id, "123")
     }
     
-    func testAddAttributes() throws {
+    func testAddUserAttributes() throws {
         let expectation = expectation(description: "addUserAttributes")
         var attributes: AttributesValue!
         userAttributesSub = reporter
@@ -58,10 +58,10 @@ final class UserIdentifyingTests: XCTestCase {
         let attributesStub = TentaclesAttributesStub()
         tentacles.addUserAttributes(attributesStub)
         wait(for: [expectation], timeout: 3)
-        XCTAssertEqual(attributes, attributesStub.serialiseToValue())
+        XCTAssertEqual(attributes, try attributesStub.serialiseToValue())
     }
     
-    func testUserLoggedOut() throws {
+    func testLogout() throws {
         let expectation = expectation(description: "userLoggedOut")
         var didUserLogOut = false
         logOutSub = reporter
@@ -73,5 +73,9 @@ final class UserIdentifyingTests: XCTestCase {
         tentacles.logout()
         wait(for: [expectation], timeout: 3)
         XCTAssertEqual(didUserLogOut, true)
+    }
+    
+    func testLogout_TentaclesReset() throws {
+        XCTFail()
     }
 }

@@ -77,21 +77,30 @@ public class Tentacles: AnalyticsRegister, UserIdentifying, AnalyticsEventTracki
     }
     
     public func logout() {
-        queue.async {
-            self.analyticsUnit.forEach { $0.reporter.logout() }
+        queue.async { [weak self] in
+            self?.analyticsUnit.forEach { $0.reporter.logout() }
         }
     }
     
     public func addUserAttributes(_ attributes: TentaclesAttributes) {
-        queue.async {
-            let attributesValue = attributes.serialiseToValue()
-            self.analyticsUnit.forEach { $0.reporter.addUserAttributes(attributesValue) }
+        queue.async { [weak self] in
+            do {
+                let attributesValue = try attributes.serialiseToValue()
+                self?.analyticsUnit.forEach { $0.reporter.addUserAttributes(attributesValue) }
+            } catch {
+                self?.report(error)
+            }
+            
         }
     }
 
     public func track(_ event: AnalyticsEvent<some TentaclesAttributes>) {
         queue.async { [weak self] in
-            self?.track(RawAnalyticsEvent(analyticsEvent: event))
+            do {
+                self?.track(try RawAnalyticsEvent(analyticsEvent: event))
+            } catch {
+                self?.report(error)
+            }
         }
     }
 
@@ -154,13 +163,21 @@ public class Tentacles: AnalyticsRegister, UserIdentifying, AnalyticsEventTracki
         willResignActiveSubscription = notificationCenter
             .publisher(for: willResignActiveNotification)
             .sink { [weak self] _ in
-                self?.domainActivitySessionManager?.processWillResign()
+                do {
+                    try self?.domainActivitySessionManager?.processWillResign()
+                } catch {
+                    self?.report(error)
+                }
             }
         didBecomeActiveSubscription = notificationCenter
             .publisher(for: didBecomeActiveNotification)
             .sink { [weak self] _ in
                 self?.identifier.reset()
-                self?.domainActivitySessionManager?.processDidBecomeActive()
+                do {
+                    try self?.domainActivitySessionManager?.processDidBecomeActive()
+                } catch {
+                    self?.report(error)
+                }
             }
     }
 #endif

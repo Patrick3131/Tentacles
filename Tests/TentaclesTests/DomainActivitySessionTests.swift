@@ -75,7 +75,7 @@ final class DomainActivitySessionTests: XCTestCase {
         let testValue = 123
         let actionAttributes = KeyValueAttribute(key: testKey, value: testValue)
         let action = DomainActivityAction(status: .open, trigger: TentaclesEventTrigger.screenDidAppear, attributes: actionAttributes)
-        let event = session.makeRawAnalyticsEvent(action: action)
+        let event = try session.makeRawAnalyticsEvent(action: action)
         try evaluateDefaultValues(event: event, status: .opened)
         let stringProperty: String = try event.getAttributeValue(
             for: TentaclesAttributesStub.Key.stringProperty)
@@ -113,7 +113,7 @@ final class DomainActivitySessionTests: XCTestCase {
     }
     
     func testMakeRawAnalyticsEventWithTrigger() throws {
-        let event = session.makeRawAnalyticsEvent(trigger: TentaclesEventTrigger.screenDidAppear)
+        let event = try session.makeRawAnalyticsEvent(trigger: TentaclesEventTrigger.screenDidAppear)
         try evaluateDefaultValues(event: event, status: .opened)
         XCTAssertEqual(event.attributes.keys.count, 10)
     }
@@ -143,7 +143,7 @@ final class DomainActivitySessionTests: XCTestCase {
     
     private func getTimestamp(for status: DomainActivitySession.Status)
     throws -> Double {
-        let event = session.makeRawAnalyticsEvent(action: .open())
+        let event = try session.makeRawAnalyticsEvent(action: .open())
         return try getTimestamp(for: status, in: event)
     }
     
@@ -155,7 +155,7 @@ final class DomainActivitySessionTests: XCTestCase {
     
     private func getDomainActivitySessionUUID()
     throws -> String {
-        let event = session.makeRawAnalyticsEvent(action: .open())
+        let event =  try session.makeRawAnalyticsEvent(action: .open())
         return try getDomainActivitySessionUUID(in: event)
     }
     

@@ -11,19 +11,5 @@ import Foundation
 ///
 /// Automatically serialised to ``AttributesValue`` when ``AnalyticsEvent`` or
 ///``DomainActivity`` are converted to ``RawAnalyticsEvent``.
-public protocol TentaclesAttributes: Encodable {
-    /// Encodes self in to AttributesValue if it fails to encode self an empty value is returned
-    func serialiseToValue() -> AttributesValue
-}
-public extension TentaclesAttributes {
-    func serialiseToValue() -> AttributesValue {
-        let data = try? JSONEncoder().encode(self)
-        var dic: [String: AnyHashable]?
-        if let data {
-            dic = try? JSONSerialization.jsonObject(
-                with: data, options: []) as? [String: AnyHashable]
-        }
-        
-        return dic ?? [String: AnyHashable]()
-    }
-}
+public protocol TentaclesAttributes: Serialisable {}
+

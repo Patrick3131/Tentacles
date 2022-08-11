@@ -46,7 +46,7 @@ class DomainActivitySessionManager {
             session = try initialiseSession(for: domainActivity,
                                             and: action)
         }
-        publishEvent(for: session, with: action)
+        try publishEvent(for: session, with: action)
     }
     
     private func processActiveSession(for action: DomainActivityAction,
@@ -104,13 +104,13 @@ class DomainActivitySessionManager {
     }
     
     private func publishEvent(for session: DomainActivitySession,
-                              with action: DomainActivityAction) {
-        _eventPublisher.send(session.makeRawAnalyticsEvent(action: action))
+                              with action: DomainActivityAction) throws {
+        _eventPublisher.send(try session.makeRawAnalyticsEvent(action: action))
     }
     
     private func publishEvent(for session: DomainActivitySession,
-                              with trigger: TentaclesEventTrigger) {
-        _eventPublisher.send(session.makeRawAnalyticsEvent(trigger: trigger))
+                              with trigger: TentaclesEventTrigger) throws {
+        _eventPublisher.send(try session.makeRawAnalyticsEvent(trigger: trigger))
     }
     
     //MARK: Background & Foreground Applifecycle
@@ -121,28 +121,28 @@ class DomainActivitySessionManager {
     
     /// When the app will resign, all active sessions are canceled and cached in memory in case
     /// the app enters foreground again.
-    func processWillResign() {
+    func processWillResign() throws {
         cachedSessions = sessions
         for (index, session) in sessions.enumerated() {
             var newSession = session
             newSession.status = .canceled
             update(newSession, at: index)
-            publishEvent(for: newSession,
+            try publishEvent(for: newSession,
                          with: TentaclesEventTrigger.willResignActive)
         }
     }
     
     /// After app did become active again, all previous active sessions are reset and updated with a new identifier.
     /// For all previous active sessions an open event is sent and then reset to the previous status.
-    func processDidBecomeActive() {
+    func processDidBecomeActive() throws {
         var newSessions = cachedSessions
-        newSessions.enumerated().forEach { (index, _ ) in
+        try newSessions.enumerated().forEach { (index, _ ) in
             newSessions[index].reset()
             newSessions[index].status = .opened
-            publishEvent(for: newSessions[index],
+            try publishEvent(for: newSessions[index],
                          with: TentaclesEventTrigger.didEnterForeground)
             newSessions[index].status = cachedSessions[index].status
-            publishEvent(for: newSessions[index],
+            try publishEvent(for: newSessions[index],
                          with: TentaclesEventTrigger.didEnterForeground)
         }
         self.sessions = newSessions

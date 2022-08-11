@@ -24,13 +24,13 @@ final class AttributesTests: XCTestCase {
     
     func testSerialisationEmptyAttributes() throws {
         let emptyAttributes = EmptyAttributes()
-        let serialisedValue = emptyAttributes.serialiseToValue()
+        let serialisedValue = try emptyAttributes.serialiseToValue()
         XCTAssertEqual(serialisedValue, [:])
     }
     
     func testSerialisationFailure() throws {
         let failingAttributes = FailingAttribues()
-        let serialisedValue = failingAttributes.serialiseToValue()
+        let serialisedValue = try failingAttributes.serialiseToValue()
         XCTAssertEqual([:], serialisedValue)
     }
 }

@@ -277,8 +277,8 @@ final class AnalyticsEventReportingTests: XCTestCase {
     /// Name got two long: test case:
     /// Two reporter connected
     /// One general middleware connected
-    /// Reporter A has one specific middleware
-    /// Reporter B has two specific middlewares
+    /// Reporter A has one dedicated middleware
+    /// Reporter B has two dedicated middlewares
     func testAnalyticsEventTrackingTwoReportersMultipleMiddlewares() throws {
         tentacles.register(.appendStringToName("A"))
         tentacles.register(reporter, with: [.lowercaseEventName,

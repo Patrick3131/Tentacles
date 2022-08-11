@@ -55,87 +55,87 @@ final class DomainActivityTests: XCTestCase {
     
     func testOpenEvent() throws {
         let _ = testWatchVideoDomainActivity(for: [.open()],
-                                               with: [.success])
+                                             with: [.success])
     }
     
     func testOpenOpenEvent() throws {
         let _ = testWatchVideoDomainActivity(for: [.open(), .open()],
-                                               with: [.success, .error])
+                                             with: [.success, .error])
     }
     
     func testOpenCancelEvent() throws {
         let _ = testWatchVideoDomainActivity(for: [.open(), .cancel()],
-                                               with: Array(repeating: .success, count: 2))
+                                             with: Array(repeating: .success, count: 2))
     }
     
     func testOpenCompleteEvent() throws {
         let _ = testWatchVideoDomainActivity(for: [.open(), .complete()],
-                                               with: [.success, .error])
+                                             with: [.success, .error])
     }
     
     func testOpenPauseEvent() throws {
         let _ = testWatchVideoDomainActivity(for: [.open(), .pause()],
-                                               with: [.success, .error])
+                                             with: [.success, .error])
     }
     
     func testOpenStartCompleteEvents() throws {
         let _ = testWatchVideoDomainActivity(for: [.open(),.start(),.complete()],
-                                               with: Array(repeating: .success, count: 3))
+                                             with: Array(repeating: .success, count: 3))
     }
     
     func testOpenPauseCompleteEvents() throws {
         let _ = testWatchVideoDomainActivity(for: [.open(),.pause(), .complete()],
-                                               with: [.success, .error, .error])
+                                             with: [.success, .error, .error])
     }
     
     func testOpenStartPauseStartCompleteEvents() throws {
         let _ = testWatchVideoDomainActivity(for: [.open(), .start(), .pause(), .start(), .complete()],
-                                               with: Array(repeating: .success, count: 5))
+                                             with: Array(repeating: .success, count: 5))
     }
     
     func testOpenStartPauseStartPauseStartCompleteEvents() throws {
         let _ = testWatchVideoDomainActivity(for: [.open(),.start(),.pause(),.start(),.pause(),.start(),.complete()],
-                                               with: Array(repeating: .success, count: 7))
+                                             with: Array(repeating: .success, count: 7))
     }
     
     func testOpenStartPauseStartPauseStartCancelEvents() throws {
         let _ = testWatchVideoDomainActivity(for: [.open(),.start(),.pause(),.start(),.pause(),.start(),.cancel()],
-                                               with: Array(repeating: .success, count: 7))
+                                             with: Array(repeating: .success, count: 7))
     }
     
     func testOpenStartCancelEvents() throws {
         let _ = testWatchVideoDomainActivity(for: [.open(),.start(),.cancel()],
-                                               with: Array(repeating: .success, count: 3))
+                                             with: Array(repeating: .success, count: 3))
     }
     
     func testStartEvent() throws {
         let _ = testWatchVideoDomainActivity(for: [.start()],
-                                               with: [.error])
+                                             with: [.error])
     }
     
     func testStartCompleteEvents() throws {
         let _ = testWatchVideoDomainActivity(for: [.start(), .complete()],
-                                               with: Array(repeating: .error, count: 2))
+                                             with: Array(repeating: .error, count: 2))
     }
     
     func testStartCancelEvents() throws {
         let _ = testWatchVideoDomainActivity(for: [.start(),.cancel()],
-                                               with: Array(repeating: .error, count: 2))
+                                             with: Array(repeating: .error, count: 2))
     }
     
     func testPauseEvent() throws {
         let _ = testWatchVideoDomainActivity(for: [.pause()],
-                                               with: [.error])
+                                             with: [.error])
     }
     
     func testCancelEvent() throws {
         let _ = testWatchVideoDomainActivity(for: [.cancel()],
-                                               with: [.error])
+                                             with: [.error])
     }
     
     func testCompleteEvent() throws {
         let _ = testWatchVideoDomainActivity(for: [.cancel()],
-                                               with: [.error])
+                                             with: [.error])
     }
     
     func testDeallocationAfterCancel() throws {
@@ -154,50 +154,129 @@ final class DomainActivityTests: XCTestCase {
         XCTAssertFalse(isSessionSimilar(at: 2, and: 3, results: results))
     }
     
-        #if canImport(UIKit) || canImport(AppKit)
-        func testAppLifecycleFromBackgroundToForeground() throws {
-            #if canImport(AppKit)
-            let willResignActivePostNotification = NSApplication.willResignActiveNotification
-            let didBecomeActivePostNotification = NSApplication.didBecomeActiveNotification
-            #endif
-            #if canImport(UIKit)
-            let willResignActivePostNotification = UIApplication.willResignActiveNotification
-            let didBecomeActivePostNotification = UIApplication.didBecomeActiveNotification
-            #endif
-            var results = [Swift.Result<RawAnalyticsEvent, Error>]()
-            let expectation = expectation(description: "numberOfExpectedResults")
-            resultsSubscription = reporterStub.analyticsEventPublisher.sink { result in
-                results.append(result)
-                if results.count == 5 {
-                    expectation.fulfill()
-                }
-            }
-            trackDomainActivity(for: watchingVideoDomainActivity, with: [.open(),.start()])
-            Thread.sleep(forTimeInterval: TimeInterval.random(in: 0...0.010))
-            NotificationCenter.default.post(name: willResignActivePostNotification, object: nil)
-            Thread.sleep(forTimeInterval: TimeInterval.random(in: 0...0.010))
-            NotificationCenter.default.post(name: didBecomeActivePostNotification, object: nil)
-            wait(for: [expectation], timeout: 3)
-            let events = evaluateResults(results, with: Array(repeating: .success, count: 5))
-            evaluate(event: events[0], for: .opened, trigger: .clicked)
-            evaluate(event: events[1], for: .started, trigger: .clicked)
-            evaluate(event: events[2], for: .canceled, trigger: .willResignActive)
-            evaluate(event: events[3], for: .opened, trigger: .didEnterForeground)
-            evaluate(event: events[4], for: .started, trigger: .didEnterForeground)
-
-            func evaluate(event: RawAnalyticsEvent, for status: EventStatus, trigger: TentaclesEventTrigger) {
-                self.evaluate(event: event, for: status, trigger: trigger, name: watchingVideoDomainActivity.name,
-                         videoName: videoName, language: language)
+#if canImport(UIKit) || canImport(AppKit)
+    func testAppLifecycleFromBackgroundToForeground() throws {
+#if canImport(AppKit)
+        let willResignActivePostNotification = NSApplication.willResignActiveNotification
+        let didBecomeActivePostNotification = NSApplication.didBecomeActiveNotification
+#endif
+#if canImport(UIKit)
+        let willResignActivePostNotification = UIApplication.willResignActiveNotification
+        let didBecomeActivePostNotification = UIApplication.didBecomeActiveNotification
+#endif
+        var results = [Swift.Result<RawAnalyticsEvent, Error>]()
+        let expectation = expectation(description: "numberOfExpectedResults")
+        resultsSubscription = reporterStub.analyticsEventPublisher.sink { result in
+            results.append(result)
+            if results.count == 5 {
+                expectation.fulfill()
             }
         }
-        #endif
+        trackDomainActivity(for: watchingVideoDomainActivity, with: [.open(),.start()])
+        Thread.sleep(forTimeInterval: TimeInterval.random(in: 0...0.010))
+        NotificationCenter.default.post(name: willResignActivePostNotification, object: nil)
+        Thread.sleep(forTimeInterval: TimeInterval.random(in: 0...0.010))
+        NotificationCenter.default.post(name: didBecomeActivePostNotification, object: nil)
+        wait(for: [expectation], timeout: 3)
+        let events = evaluateResults(results, with: Array(repeating: .success, count: 5))
+        evaluate(event: events[0], for: .opened, trigger: .clicked)
+        evaluate(event: events[1], for: .started, trigger: .clicked)
+        evaluate(event: events[2], for: .canceled, trigger: .willResignActive)
+        evaluate(event: events[3], for: .opened, trigger: .didEnterForeground)
+        evaluate(event: events[4], for: .started, trigger: .didEnterForeground)
+        
+        func evaluate(event: RawAnalyticsEvent, for status: EventStatus, trigger: TentaclesEventTrigger) {
+            self.evaluate(event: event, for: status, trigger: trigger, name: watchingVideoDomainActivity.name,
+                          videoName: videoName, language: language)
+        }
+    }
+#endif
     
     /// events derived from the same session share the same uuid
     func testRelationBetweenEvents() throws {
         let results = testWatchVideoDomainActivity(for: [.open(), .start()],
-                                                     with: [.success,.success])
+                                                   with: [.success,.success])
         XCTAssertTrue(isSessionSimilar(at: 0, and: 1, results: results))
     }
+    
+    func testSequenceOfEventsWhenTrackedOnDifferentQueue() throws {
+        let event = DomainActivity()
+        tentacles.register(reporterStub)
+        let expectation = expectation(description: "blabla")
+        var results = [Result<RawAnalyticsEvent, Error>]()
+        let domainActivities = Array(repeating: [(activity: event,
+                                                  action: DomainActivityAction.open()),
+                                                 (activity: event,
+                                                  action: DomainActivityAction.start()),
+                                                 (activity: event,
+                                                  action: DomainActivityAction.complete())],
+                                     count: 5)
+        resultsSubscription = reporterStub.analyticsEventPublisher
+            .sink { result in
+                results.append(result)
+                if results.count == (3*5) {
+                    expectation.fulfill()
+                }
+            }
+        let dispatchQueue = DispatchQueue(label: "sfsdf", attributes: .concurrent)
+        dispatchQueue.async {
+            domainActivities.forEach { unit in
+                unit.forEach { unit in
+                    print(unit.action.status)
+                    Thread.sleep(forTimeInterval: 0.0001)
+                    self.tentacles.track(unit.activity, with: unit.action)
+                    
+                }
+            }
+        }
+        
+        wait(for: [expectation], timeout: 3)
+        var events = getRawAnalyticsEvents(from: results)
+        events.sort {
+            let value: Double = try! $0.getAttributeValue(for: "timestamp")
+            let otherValue: Double = try! $1.getAttributeValue(for: "timestamp")
+            return value < otherValue
+        }
+        XCTAssertTrue(evaluateEventForStatus(events[0], status: .opened))
+        XCTAssertTrue(evaluateEventForStatus(events[1], status: .started))
+        XCTAssertTrue(evaluateEventForStatus(events[2], status: .completed))
+        XCTAssertTrue(evaluateEventForStatus(events[3], status: .opened))
+        XCTAssertTrue(evaluateEventForStatus(events[4], status: .started))
+        XCTAssertTrue(evaluateEventForStatus(events[5], status: .completed))
+        XCTAssertTrue(evaluateEventForStatus(events[6], status: .opened))
+        XCTAssertTrue(evaluateEventForStatus(events[7], status: .started))
+        XCTAssertTrue(evaluateEventForStatus(events[8], status: .completed))
+        XCTAssertTrue(evaluateEventForStatus(events[9], status: .opened))
+        XCTAssertTrue(evaluateEventForStatus(events[10], status: .started))
+        XCTAssertTrue(evaluateEventForStatus(events[11], status: .completed))
+        XCTAssertTrue(evaluateEventForStatus(events[12], status: .opened))
+        XCTAssertTrue(evaluateEventForStatus(events[13], status: .started))
+        XCTAssertTrue(evaluateEventForStatus(events[14], status: .completed))
+
+
+        
+    }
+    
+    private func evaluateEventForStatus(_ event: RawAnalyticsEvent,
+                                        status: EventStatus) -> Bool {
+        let value: String? = try? event.getAttributeValue(for: KeyAttributes.status)
+        print(value, "for ", status)
+        return value ?? "" == status.rawValue
+    }
+    
+    private func getRawAnalyticsEvents(
+        from results: [Result<RawAnalyticsEvent, Error>]) -> [RawAnalyticsEvent] {
+            var events = [RawAnalyticsEvent]()
+            results.forEach { result in
+                switch result {
+                case.success(let event):
+                    events.append(event)
+                case .failure(_):
+                    break
+                }
+            }
+            return events
+        }
     
     func testDomainActivitysAreEqual() throws {
         let domainActivity = DomainActivityStub()
@@ -217,18 +296,18 @@ final class DomainActivityTests: XCTestCase {
         let otherVideoName = "Studying SwiftUI"
         let otherLanguage = "German"
         let attributes = WatchingVideoAttributes(videoName: otherVideoName,
-                        language: otherLanguage,
-                        duration: 435)
+                                                 language: otherLanguage,
+                                                 duration: 435)
         let otherDomainActivity = WatchingVideoDomainActivity(name: watchVideo, attributes: attributes)
         let expectedResults: [ExpectedResult] = [.success,.success,.success]
         let results = testWatchVideoDomainActivity(for: [.open(),.start(),.complete()],
-                                                     with: expectedResults)
+                                                   with: expectedResults)
         let otherExpectedResults: [ExpectedResult] = [.success,.success,.success]
         let otherResults = testDomainActivity(otherDomainActivity,
-                                                for: [.open(),.start(),.complete()],
-                                                with: otherExpectedResults,
-                                                videoName: otherVideoName,
-                                                language: otherLanguage)
+                                              for: [.open(),.start(),.complete()],
+                                              with: otherExpectedResults,
+                                              videoName: otherVideoName,
+                                              language: otherLanguage)
         XCTAssertTrue(isSessionSimilar(rhs: results[0], lhs: results[2]))
         XCTAssertFalse(isSessionSimilar(rhs: results[0], lhs: otherResults[0]))
         XCTAssertTrue(isSessionSimilar(rhs: otherResults[0], lhs: otherResults[2]))
@@ -239,13 +318,13 @@ final class DomainActivityTests: XCTestCase {
     }
     
     private func testWatchVideoDomainActivity(for actions: [DomainActivityAction],
-                                                with expectedResults: [ExpectedResult])
+                                              with expectedResults: [ExpectedResult])
     -> [Swift.Result<RawAnalyticsEvent, Error>] {
         testDomainActivity(watchingVideoDomainActivity,
-                             for: actions,
-                             with: expectedResults,
-                             videoName: videoName,
-                             language: language)
+                           for: actions,
+                           with: expectedResults,
+                           videoName: videoName,
+                           language: language)
     }
     
     private func testDomainActivity(
@@ -297,38 +376,41 @@ final class DomainActivityTests: XCTestCase {
     }
     
     
-    private func trackDomainActivity(for domainActivity: DomainActivity<some TentaclesAttributes>,
-                                       with actions: [DomainActivityAction]) {
-        for action in actions {
-            tentacles.track(domainActivity, with: action)
-        }
-    }
-    
-    /// - Returns: Indexes of results that contain successful events, successful means it is not an error.
-    private func evaluateResults(_ results: [Swift.Result<RawAnalyticsEvent,Error>],
-                                 with expectedResults: [ExpectedResult]) -> [RawAnalyticsEvent] {
-        var events = [RawAnalyticsEvent]()
-        results.enumerated().forEach { index, result in
-            let expectedResult = expectedResults[index]
-            if let event = evaluateResult(result,
-                                      with: expectedResult) {
-                events.append(event)
+    private func trackDomainActivity(
+        for domainActivity: DomainActivity<some TentaclesAttributes>,
+        with actions: [DomainActivityAction]) {
+            for action in actions {
+                tentacles.track(domainActivity, with: action)
             }
         }
-        return events
-    }
     
-    private func evaluateResult(_ result: Swift.Result<RawAnalyticsEvent,Error>,
-                                with expectedResult: ExpectedResult) -> RawAnalyticsEvent? {
-        switch result {
-        case .success(let event):
-            XCTAssertEqual(expectedResult, .success)
-            return event
-        case .failure:
-            XCTAssertEqual(expectedResult, .error)
-            return nil
+    /// - Returns: Indexes of results that contain successful events, successful means it is not an error.
+    private func evaluateResults(
+        _ results: [Swift.Result<RawAnalyticsEvent,Error>],
+        with expectedResults: [ExpectedResult]) -> [RawAnalyticsEvent] {
+            var events = [RawAnalyticsEvent]()
+            results.enumerated().forEach { index, result in
+                let expectedResult = expectedResults[index]
+                if let event = evaluateResult(result,
+                                              with: expectedResult) {
+                    events.append(event)
+                }
+            }
+            return events
         }
-    }
+    
+    private func evaluateResult(
+        _ result: Swift.Result<RawAnalyticsEvent,Error>,
+        with expectedResult: ExpectedResult) -> RawAnalyticsEvent? {
+            switch result {
+            case .success(let event):
+                XCTAssertEqual(expectedResult, .success)
+                return event
+            case .failure:
+                XCTAssertEqual(expectedResult, .error)
+                return nil
+            }
+        }
     
     private func isSessionSimilar(at index: Int,
                                   and otherIndex: Int,
