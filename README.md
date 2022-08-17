@@ -3,9 +3,9 @@ Current State: ****Work in Progress**** Documentation & Tests(100% completed, bu
 
 # Welcome to Tentacles
 
-Tentacles are body parts that an animal uses to hold, grab or even feel things. That is what Tentacles is used for in terms of data collection in your application. It helps you to abstract analytics from specific providers, to structure your analytic events in a type-safe way and to collect meaningful domain-driven data with ``DomainActivity``.
+Tentacles are body parts that an animal uses to hold, grab or even feel things. That is what Tentacles are used for in terms of data collection in your application. It helps you to abstract analytics from specific providers, to structure your analytic events in a type-safe way and to collect meaningful domain-driven data with ``DomainActivity``.
 
-For further information why abstracting a third party library make sense [Benoit Pasquier wrote an article](https://benoitpasquier.com/abstract-ios-third-party-libraries/).
+For further information, why abstracting a third party library make sense [Benoit Pasquier wrote an article](https://benoitpasquier.com/abstract-ios-third-party-libraries/).
 
 ## ✨Features
 - Analytics layer abstraction
@@ -18,7 +18,7 @@ For further information why abstracting a third party library make sense [Benoit
 
 
 ## Analytics setup
-Tentacles registers and manages ``AnalyticsReporter`` in a central entity. If we want to use a service like Firebase we need to great an implementation that conforms to ``AnalyticsReporting``:
+Tentacles registers and manages ``AnalyticsReporter`` in a central entity. If we want to use a service like Firebase we need to create an implementation that conforms to ``AnalyticsReporting``:
 
 ```swift
 class FirebaseReporter: AnalyticsReporting {
@@ -124,10 +124,10 @@ Our Firebase analytics implementation does not support reporting errors, therefo
 In a case where no attributes need to be reported, ``EmptyAttributes`` must be used.
 ## Domain driven analytics
 
-When developing an app it is important to understand its domain. Yes, we want to track if a user logs in or clicks on a specific button, but what we are particular interested is how are users interacting with ``DomainActivity``s. ``DomainActivity``s are the core functionalities that should bring the most value to your users and are specific to your app and its domain. 
+When developing an app, it is important to understand its domain. Yes, we want to track if a user logs in or clicks on a specific button, but what we are particular interested is how are users interacting with ``DomainActivity``s. ``DomainActivity``s are the core functionalities that should bring the most value to your users and are specific to your app and its domain. 
 
 Tentacles offers a way to connect events that are related to the same ``DomainActivity``. 
-A session (identified by UUID) is a period devoted to a particular ``DomainActivity``. The UUID identifying the session is automatically added and managed. This brings the advantage of further possibilities to analyse the data, as connections between the events can be derived. For example as Tentacles tracks every status change of a ``DomainActivity`` with a timestamp it is easily possible to calculate the duration between when the ``DomainActivity`` started and completed. 
+A session (identified by UUID) is a period devoted to a particular ``DomainActivity``. The UUID identifying the session is automatically added and managed. This brings the advantage of further possibilities to analyse the data, as connections between the events can be derived. For example, as Tentacles tracks every status change of a ``DomainActivity`` with a timestamp it is easily possible to calculate the duration between when the ``DomainActivity`` started and completed. 
  
 Let's use Youtube as an example, one of their ``DomainActivity``s a user can do on their platform is watching videos. The user experience of watching a video usually involves these steps:
 ```mermaid
@@ -150,13 +150,13 @@ B --> D(Complete)
 C --> E
 B --> E(Cancel)
 ```
-By reaching completed or canceled the session ends and it gets deallocated. 
-If a prohibited status update occurs a non fatal error event is forwarded and the status is **not** updated. In cases where attributes are specific to a ``DomainActivity`` status they can be added to  ``DomainActivityAction``. I.e. if a pause event needs the pausing point of the video, these attributes are then mapped to the derived analytics events. 
+By reaching completed or canceled the session ends, and it gets deallocated. 
+If a prohibited status update occurs, a non fatal error event is forwarded and the status is **not** updated. In cases where attributes are specific to a ``DomainActivity`` status, they can be added to  ``DomainActivityAction``. I.e. if a pause event needs the pausing point of the video, these attributes are then mapped to the derived analytics events. 
 
 Multiple sessions with different ``DomainActivity``s can be managed. However, only one session for one particular ``DomainActivity``. A ``DomainActivity`` is equal if name and attributes match, not considering additional attributes that can be added by ``DomainActivityAction``. 
 
 ### Background & Foreground Applifecycle
-When the app **will resign**, all active ``DomainActivity`` sessions are canceled and cached in memory in case the app enters foreground again. After app **did become active** again, all previous active sessions are reset and updated with a new identifier. For all previous active sessions an open event is sent and then reset to the previous status that also triggers an event.
+When the app **will resign**, all active ``DomainActivity`` sessions are canceled and cached in memory in case the app enters foreground again. After app **did become active** again, all previous active sessions are reset and updated with a new identifier. For all previous active sessions, an open event is sent and then reset to the previous status that also triggers an event.
 
 ### Defining & Tracking ``DomainActivity``s 
 
@@ -176,7 +176,7 @@ let action = DomainActivityAction(status: .open, trigger: .clicked)
 tracker.track(for: videoWatching, with: action)
 ```
 
-There are convenient static functions to build an action e.g.:
+There are convenient static functions to build an action, e.g.:
 
 ```swift
 tracker.track(for: watchingVideo, with: .start())
@@ -196,7 +196,7 @@ tracker.track(for: videoWatching, with: .complete(trigger: .automatically, attri
 ```
 
 ## Default attributes
-CustomAttributes added via ``TentacleAttributes`` that share the same same key as default attributes will overwrite default ones.
+CustomAttributes added via ``TentacleAttributes`` that share the same key as default attributes will overwrite default ones.
 
 Attributes added to every event by default:
 
@@ -215,11 +215,11 @@ Attributes added to events derived from ``DomainActivity``:
         -  i.e. started_1, started_2
 
 ## Middleware
-``Middleware``s are used to transform events and can be registered to a specific reporter or as a general ``Middleware`` to the ``AnalyticsRegister``. If added to a specific reporter only events reported to this reporter will be transformed. 
+``Middleware``s are used to transform events and can be registered to a specific reporter or as a general ``Middleware`` to the ``AnalyticsRegister``. If added to a specific reporter, only events reported to this reporter will be transformed. 
 Use Cases:
 
 - Transforming Events
-    - Editing existing attribute keys or values i.e. capitalising the key or converting it in a different format.
+    - Editing existing attribute keys or values, i.e. capitalising the key or converting it in a different format.
     - Adding new attributes, i.e. calculate the active duration a user spent with a particular domain proposition.
 - Skipping events, i.e. skip all events for a category for a specific reporter.
 
