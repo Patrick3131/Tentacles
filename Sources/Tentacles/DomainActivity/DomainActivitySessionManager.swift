@@ -128,7 +128,7 @@ class DomainActivitySessionManager {
             newSession.status = .canceled
             update(newSession, at: index)
             try publishEvent(for: newSession,
-                         with: TentaclesEventTrigger.willResignActive)
+                             with: TentaclesEventTrigger.willResignActive)
         }
     }
     
@@ -140,10 +140,10 @@ class DomainActivitySessionManager {
             newSessions[index].reset()
             newSessions[index].status = .opened
             try publishEvent(for: newSessions[index],
-                         with: TentaclesEventTrigger.didEnterForeground)
+                             with: TentaclesEventTrigger.didEnterForeground)
             newSessions[index].status = cachedSessions[index].status
             try publishEvent(for: newSessions[index],
-                         with: TentaclesEventTrigger.didEnterForeground)
+                             with: TentaclesEventTrigger.didEnterForeground)
         }
         self.sessions = newSessions
         cachedSessions = []

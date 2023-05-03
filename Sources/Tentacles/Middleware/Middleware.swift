@@ -50,13 +50,9 @@ public extension Array where Array.Element == Middleware<RawAnalyticsEvent> {
     /// - Returns: Nil if the actions evaluated to skip.
     /// Otherwise will returned the transformed ``RawAnalyticsEvent``.
     func transform(_ event: RawAnalyticsEvent?) -> RawAnalyticsEvent? {
-        var _newEvent: RawAnalyticsEvent? = event
-        self.forEach { middleware in
-            if let unwrappedEvent = _newEvent {
-                _newEvent = middleware.transform(unwrappedEvent)
-            }
+        return self.reduce(event) { (currentEvent, middleware) in
+            return currentEvent.flatMap(middleware.transform)
         }
-        return _newEvent
     }
 }
 

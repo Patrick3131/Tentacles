@@ -30,7 +30,7 @@ final class AttributesTests: XCTestCase {
     
     func testSerialisationFailure() throws {
         let failingAttributes = FailingAttribues()
-        let serialisedValue = try failingAttributes.serialiseToValue()
-        XCTAssertEqual([:], serialisedValue)
+        let serialisedValue = try? failingAttributes.serialiseToValue()
+        XCTAssertEqual(nil, serialisedValue)
     }
 }

@@ -201,8 +201,7 @@ final class DomainActivityTests: XCTestCase {
     
     func testSequenceOfEventsWhenTrackedOnDifferentQueue() throws {
         let event = DomainActivity()
-        tentacles.register(reporterStub)
-        let expectation = expectation(description: "blabla")
+        let expectation = expectation(description: "testSequenceOfEventsWhenTrackedOnDifferentQueue")
         var results = [Result<RawAnalyticsEvent, Error>]()
         let domainActivities = Array(repeating: [(activity: event,
                                                   action: DomainActivityAction.open()),
@@ -218,7 +217,7 @@ final class DomainActivityTests: XCTestCase {
                     expectation.fulfill()
                 }
             }
-        let dispatchQueue = DispatchQueue(label: "sfsdf", attributes: .concurrent)
+        let dispatchQueue = DispatchQueue(label: "Concurrent", attributes: .concurrent)
         dispatchQueue.async {
             domainActivities.forEach { unit in
                 unit.forEach { unit in
@@ -252,15 +251,11 @@ final class DomainActivityTests: XCTestCase {
         XCTAssertTrue(evaluateEventForStatus(events[12], status: .opened))
         XCTAssertTrue(evaluateEventForStatus(events[13], status: .started))
         XCTAssertTrue(evaluateEventForStatus(events[14], status: .completed))
-
-
-        
     }
     
     private func evaluateEventForStatus(_ event: RawAnalyticsEvent,
                                         status: EventStatus) -> Bool {
         let value: String? = try? event.getAttributeValue(for: KeyAttributes.status)
-        print(value, "for ", status)
         return value ?? "" == status.rawValue
     }
     
