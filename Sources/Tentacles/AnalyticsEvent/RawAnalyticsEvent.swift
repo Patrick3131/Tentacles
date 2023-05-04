@@ -9,10 +9,12 @@ import Foundation
 
 /// Event reported to ``AnalyticsReporting``.
 public struct RawAnalyticsEvent: Equatable {
+
     enum Error: Swift.Error {
-        case keyNotAvailable
-        case attributeValueWrongType
+        case keyNotAvailable(String)
+        case attributeValueWrongType(Any, Any)
     }
+
     /// The name of the event being reported.
     public var name: String
     /// Containing all additional attributes that are reported.
@@ -38,6 +40,39 @@ public extension RawAnalyticsEvent {
     func getAttributeValue<T>(for key: String) throws -> T {
         let value: AnyHashable = try getValue(in: self.attributes, for: key)
         return try RawAnalyticsEvent.downcast(value)
+    }
+
+    /// Decodes a value of type T from the attributes dictionary of a ``RawAnalyticsEvent``.
+    ///
+    /// This function first downcasts the attributes dictionary of the RawAnalyticsEvent to [String: AnyHashable] and
+    /// retrieves the Data value for the provided key. Then, it uses a JSONDecoder
+    /// to decode the Data into the desired type T, conforming to the Decodable protocol.
+    ///
+    /// - Parameter key: Key used in the attributes dictionary to retrieve the Data value.
+    ///
+    /// - Returns:
+    ///   The decoded value of type T.
+    ///
+    /// - Throws:
+    ///   Error.keyNotAvailable: when the key is not available in the attributes dictionary.
+    ///   Decoding errors: when the decoding process fails.
+    func decodeValue<T: Decodable>(for key: String) throws -> T {
+        // Downcast the dictionary to [String: AnyHashable]
+        let dic: [String: AnyHashable] = try RawAnalyticsEvent.downcast(self.attributes)
+
+        // Get the value for the key as Data
+        guard let dataValue = dic[key] as? Data else {
+            throw Error.keyNotAvailable(key)
+        }
+
+        // Use a JSONDecoder to decode the Data to the desired type T
+        let decoder = JSONDecoder()
+        do {
+            let decodedValue = try decoder.decode(T.self, from: dataValue)
+            return decodedValue
+        } catch {
+            throw error
+        }
     }
     
     /// Used to get a value from a dic of type Anyhashable.
@@ -82,14 +117,9 @@ public extension RawAnalyticsEvent {
                      for key: String) throws -> T {
         let dic: [String: AnyHashable] = try RawAnalyticsEvent.downcast(dic)
         guard let value = dic[key] else {
-            throw Error.keyNotAvailable
+            throw Error.keyNotAvailable(key)
         }
         return try RawAnalyticsEvent.downcast(value)
-    }
-    
-    func decodeValue<T>(in dic: AnyHashable,
-                        for key: String) throws -> T {
-        fatalError()
     }
     
     /// Downcasts an AnyHashable to concrete type T.
@@ -98,7 +128,7 @@ public extension RawAnalyticsEvent {
     ///  be casted to T.
     internal static func downcast<T>(_ value: AnyHashable) throws -> T {
         guard let typedValue = value as? T else {
-            throw Error.attributeValueWrongType
+            throw Error.attributeValueWrongType(value.self, T.self)
         }
         return typedValue
     }
