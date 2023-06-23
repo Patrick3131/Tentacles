@@ -37,6 +37,15 @@ extension RawAnalyticsEvent {
 }
 
 public extension RawAnalyticsEvent {
+    /// Checks if the `RawAnalyticsEvent` belongs to a specific category.
+    ///
+    /// This function attempts to decode the value for the 'category' attribute in
+    /// the event's attributes dictionary, and then compares it to the name of the
+    /// provided category.
+    ///
+    /// - Parameter category: The category to compare with the event's category.
+    ///
+    /// - Returns: `true` if the event belongs to the provided category, `false` otherwise.
     func isCategory(_ category: AnalyticsEventCategory) -> Bool {
         do {
             let categoryValue: String = try decodeValue(for: KeyAttributes.category)
