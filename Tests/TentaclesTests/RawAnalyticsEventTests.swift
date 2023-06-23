@@ -11,7 +11,19 @@ import XCTest
 
 final class RawAnalyticsEventTests: XCTestCase {
     // Other RawAnalyticsEvent related test cases are implicitly covered by other tests
-    
+
+    func testIsCategoryTrue() throws {
+        let analyticsEvent = AnalyticsEventStub()
+        let rawAnalyticsEvent = try RawAnalyticsEvent(analyticsEvent: analyticsEvent)
+        XCTAssertTrue(rawAnalyticsEvent.isCategory(TentaclesEventCategory.interaction))
+    }
+
+    func testIsCategoryFalse() throws {
+        let analyticsEvent = AnalyticsEventStub()
+        let rawAnalyticsEvent = try RawAnalyticsEvent(analyticsEvent: analyticsEvent)
+        XCTAssertFalse(rawAnalyticsEvent.isCategory(TentaclesEventCategory.screen))
+    }
+
     func testCastingFailure() throws {
         do {
             let _: String = try RawAnalyticsEvent.downcast(true)
@@ -21,7 +33,7 @@ final class RawAnalyticsEventTests: XCTestCase {
             case .attributeValueWrongType(let firstValue, let secondValue):
                 XCTAssertTrue(firstValue is Bool)
                 XCTAssertTrue(secondValue is String.Type)
-            case .keyNotAvailable(_):
+            case .keyNotAvailable(_), .valueIsNotData(_):
                 XCTFail("Unexpected error case: .keyNotAvailable")
             }
         } catch {
@@ -63,7 +75,7 @@ final class RawAnalyticsEventTests: XCTestCase {
              XCTFail("Expected error not thrown")
          } catch let error as RawAnalyticsEvent.Error {
              switch error {
-             case .attributeValueWrongType(_, _):
+             case .attributeValueWrongType(_, _), .valueIsNotData(_):
                  XCTFail("Unexpected error case: .attributeValueWrongType")
              case .keyNotAvailable(let key):
                  XCTAssertEqual(key, "nonexistentKey")

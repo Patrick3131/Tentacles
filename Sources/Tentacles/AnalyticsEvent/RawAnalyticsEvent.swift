@@ -13,6 +13,7 @@ public struct RawAnalyticsEvent: Equatable {
     enum Error: Swift.Error {
         case keyNotAvailable(String)
         case attributeValueWrongType(Any, Any)
+        case valueIsNotData(AnyHashable)
     }
 
     /// The name of the event being reported.
@@ -36,6 +37,15 @@ extension RawAnalyticsEvent {
 }
 
 public extension RawAnalyticsEvent {
+    func isCategory(_ category: AnalyticsEventCategory) -> Bool {
+        do {
+            let categoryValue: String = try decodeValue(for: KeyAttributes.category)
+            return category.name == categoryValue
+        } catch {
+            return false
+        }
+    }
+
     /// Returns attribute value of key of attributes in ``RawAnalyticsEvent``.
     func getAttributeValue<T>(for key: String) throws -> T {
         let value: AnyHashable = try getValue(in: self.attributes, for: key)
@@ -60,19 +70,20 @@ public extension RawAnalyticsEvent {
         // Downcast the dictionary to [String: AnyHashable]
         let dic: [String: AnyHashable] = try RawAnalyticsEvent.downcast(self.attributes)
 
-        // Get the value for the key as Data
-        guard let dataValue = dic[key] as? Data else {
+        guard let value = dic[key] else {
             throw Error.keyNotAvailable(key)
         }
 
-        // Use a JSONDecoder to decode the Data to the desired type T
-        let decoder = JSONDecoder()
-        do {
-            let decodedValue = try decoder.decode(T.self, from: dataValue)
-            return decodedValue
-        } catch {
-            throw error
+        if let downcastedValue = value as? T {
+            return downcastedValue
         }
+        // Get the value for the key as Data
+        guard let dataValue = value as? Data else {
+            throw Error.valueIsNotData(value)
+        }
+
+        // Use a JSONDecoder to decode the Data to the desired type T
+        return try JSONDecoder().decode(T.self, from: dataValue)
     }
     
     /// Used to get a value from a dic of type Anyhashable.
