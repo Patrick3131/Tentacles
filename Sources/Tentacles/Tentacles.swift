@@ -123,7 +123,6 @@ public class Tentacles: AnalyticsRegister, UserIdentifying, AnalyticsEventTracki
                 self?.report(error)
             }
         }
-
     }
     
     /// Sets up DomainActivitySessionManager and event publisher of ``DomainActivity`` related events. If already set up it does nothing.
