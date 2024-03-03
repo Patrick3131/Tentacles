@@ -152,4 +152,40 @@ final class MiddlewareTests: XCTestCase {
             XCTAssertTrue(false)
         }
     }
+
+    func testCamelCaseToSnakeCaseEventNameTransformation() throws {
+        let event = RawAnalyticsEvent(name: "testEventName")
+        let transformedEvent = Middleware<RawAnalyticsEvent>.camelCaseToSnakeCaseEventName.transform(event)
+
+        switch transformedEvent {
+        case .some(let event):
+            XCTAssertEqual(event.name, "test_event_name")
+        case .none:
+            XCTFail("Event was not transformed.")
+        }
+    }
+
+    func testReplaceSpaceWithUnderscoreEventNameTransformation() throws {
+        let event = RawAnalyticsEvent(name: "test event name")
+        let transformedEvent = Middleware<RawAnalyticsEvent>.replaceSpaceWithUnderscore.transform(event)
+
+        switch transformedEvent {
+        case .some(let event):
+            XCTAssertEqual(event.name, "test_event_name")
+        case .none:
+            XCTFail("Event was not transformed.")
+        }
+    }
+
+    func testLowercaseEventNameTransformation() throws {
+        let event = RawAnalyticsEvent(name: "TestEventName")
+        let transformedEvent = Middleware<RawAnalyticsEvent>.lowercaseEventName.transform(event)
+
+        switch transformedEvent {
+        case .some(let event):
+            XCTAssertEqual(event.name, "testeventname")
+        case .none:
+            XCTFail("Event was not transformed.")
+        }
+    }
 }

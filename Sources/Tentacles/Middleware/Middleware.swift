@@ -55,3 +55,19 @@ public extension Array where Array.Element == Middleware<RawAnalyticsEvent> {
         }
     }
 }
+
+extension String {
+    /// Converts a camelCase string to snake_case.
+    func camelCaseToSnakeCase() -> String {
+        return unicodeScalars.reduce("") { partialResult, scalar in
+            if CharacterSet.uppercaseLetters.contains(scalar) {
+                // Convert scalar to String before calling lowercased().
+                let lowercasedChar = String(scalar).lowercased()
+                // Prepend "_" before uppercase letters (except for the first character).
+                return partialResult + (partialResult.isEmpty ? "" : "_") + lowercasedChar
+            } else {
+                return partialResult + String(scalar)
+            }
+        }
+    }
+}
